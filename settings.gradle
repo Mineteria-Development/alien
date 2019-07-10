@@ -1,0 +1,10 @@
+rootProject.name = 'Alien'
+include 'mcpe'
+findProject(':mcpe')?.name = 'alien-mcpe'
+include 'proxy'
+findProject(':proxy')?.name = 'alien-proxy'
+include 'network-shared'
+findProject(':network-shared')?.name = 'alien-network-shared'
+include 'natives'
+findProject(':natives')?.name = 'alien-natives'
+

@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile project(':alien-network-shared')
+    compile project(':alien-natives')
+    compile 'network.ycc:netty-raknet-server:0.7-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    compile 'com.google.code.gson:gson:2.8.5'
+    compile 'com.nimbusds:nimbus-jose-jwt:7.4'
+}

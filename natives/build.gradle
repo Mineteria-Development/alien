@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile 'io.netty:netty-handler:4.1.37.Final'
+    compile 'com.google.guava:guava:27.0-jre'
+}

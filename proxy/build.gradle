@@ -1,0 +1,10 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile project(':alien-mcpe')
+    compile project(':alien-network-shared')
+
+    compile 'org.apache.logging.log4j:log4j-core:2.12.0'
+}
