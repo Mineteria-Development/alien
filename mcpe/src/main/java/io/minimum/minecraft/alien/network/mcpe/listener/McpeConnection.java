@@ -1,9 +1,11 @@
 package io.minimum.minecraft.alien.network.mcpe.listener;
 
 import com.google.common.base.Preconditions;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacket;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacketHandler;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
@@ -23,9 +25,9 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
         this.packetHandler = packetHandler;
     }
 
-    public void close() {
+    public void close(String message) {
         Preconditions.checkState(channel.isOpen(), "Backend channel is not open.");
-        channel.close();
+        channel.writeAndFlush(new McpeDisconnect(message)).addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override

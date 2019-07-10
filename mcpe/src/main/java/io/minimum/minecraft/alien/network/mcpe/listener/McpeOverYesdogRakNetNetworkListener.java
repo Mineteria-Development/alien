@@ -7,6 +7,7 @@ import io.minimum.minecraft.alien.network.mcpe.codec.McpeConnectionCodec;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpePacketRegistry;
 import io.minimum.minecraft.alien.network.mcpe.handler.InitialNetworkPacketHandler;
 import io.minimum.minecraft.alien.network.mcpe.handler.ServerStatusHandler;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -30,6 +31,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
     public boolean bind() {
         final McpePacketRegistry registry = new McpePacketRegistry();
         registry.register(0x01, McpeLogin.class, McpeLogin::new);
+        registry.register(0x05, McpeDisconnect.class, McpeDisconnect::new);
 
         this.channel = new ServerBootstrap()
                 .group(new NioEventLoopGroup(), new DefaultEventLoopGroup())

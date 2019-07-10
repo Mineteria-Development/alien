@@ -9,6 +9,7 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.proc.JWSVerifierFactory;
 import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacketHandler;
 import org.apache.logging.log4j.LogManager;
@@ -89,15 +90,22 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
             }
         } catch (JOSEException | InvalidKeySpecException | ParseException | NoSuchAlgorithmException e) {
             LOGGER.error("Unable to verify chain of trust for connection {}", connection.getRemoteAddress(), e);
-            connection.close();
+            connection.close("Internal server error");
+            return;
         }
 
         if (desiredData == null) {
             LOGGER.error("No extraData found for {}", connection.getRemoteAddress());
-            connection.close();
+            connection.close("Internal server error");
         }
 
         LOGGER.info("I have a gift for you. {}", desiredData);
+        connection.close("I don't do much yet.");
+    }
+
+    @Override
+    public void handle(McpeDisconnect mcpeDisconnect) {
+
     }
 
     @Override
