@@ -41,9 +41,13 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
         }
     }
 
-    private static PublicKey getKey(String b64) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return KeyFactory.getInstance("EC").generatePublic(
-                new X509EncodedKeySpec(Base64.getDecoder().decode(b64)));
+    private static PublicKey getKey(String b64) throws InvalidKeySpecException {
+        try {
+            return KeyFactory.getInstance("EC").generatePublic(
+                    new X509EncodedKeySpec(Base64.getDecoder().decode(b64)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
+        }
     }
 
     private final McpeConnection connection;
@@ -63,32 +67,10 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
         // and a chain of trust of JSON Web Tokens.
 
         // Verify the JWT chain of trust.
-        JsonArray chain = obtainChain(packet);
-        JsonObject desiredData = null;
-
+        JsonObject desiredData;
         try {
-            PublicKey lastKey = null;
-            boolean trustedChain = false;
-            for (JsonElement element : chain) {
-                JWSObject token = JWSObject.parse(element.getAsString());
-                if (!trustedChain) {
-                    trustedChain = verify(MOJANG_PUBLIC_KEY, token);
-                }
-                if (lastKey != null) {
-                    if (!verify(lastKey, token)) {
-                        throw new JOSEException("Unable to verify key in chain.");
-                    }
-                }
-
-                JsonObject object = GSON.fromJson(token.getPayload().toString(), JsonObject.class);
-                lastKey = getKey(object.getAsJsonPrimitive("identityPublicKey").getAsString());
-
-                if (object.has("extraData")) {
-                    desiredData = object;
-                    break;
-                }
-            }
-        } catch (JOSEException | InvalidKeySpecException | ParseException | NoSuchAlgorithmException e) {
+            desiredData = validateAndObtainExtraData(packet);
+        } catch (ChainUntrustedException e) {
             LOGGER.error("Unable to verify chain of trust for connection {}", connection.getRemoteAddress(), e);
             connection.close("Internal server error");
             return;
@@ -97,6 +79,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
         if (desiredData == null) {
             LOGGER.error("No extraData found for {}", connection.getRemoteAddress());
             connection.close("Internal server error");
+            return;
         }
 
         LOGGER.info("I have a gift for you. {}", desiredData);
@@ -120,5 +103,49 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     private JsonArray obtainChain(McpeLogin packet) {
         JsonObject object = GSON.fromJson(packet.getJwt().toString(), JsonObject.class);
         return object.getAsJsonArray("chain");
+    }
+
+    private JsonObject validateAndObtainExtraData(McpeLogin login) throws ChainUntrustedException {
+        JsonArray chain = obtainChain(login);
+        try {
+            PublicKey lastKey = null;
+            boolean trustedChain = false;
+            for (JsonElement element : chain) {
+                JWSObject token = JWSObject.parse(element.getAsString());
+                if (!trustedChain) {
+                    trustedChain = verify(MOJANG_PUBLIC_KEY, token);
+                }
+                if (lastKey != null) {
+                    if (!verify(lastKey, token)) {
+                        throw new ChainUntrustedException();
+                    }
+                }
+
+                JsonObject object = GSON.fromJson(token.getPayload().toString(), JsonObject.class);
+                lastKey = getKey(object.getAsJsonPrimitive("identityPublicKey").getAsString());
+
+                if (object.has("extraData")) {
+                    return object;
+                }
+            }
+        } catch (ParseException | JOSEException | InvalidKeySpecException e) {
+            throw new ChainUntrustedException(e);
+        }
+
+        throw new ChainUntrustedException("The chain validated, but no extra data was found");
+    }
+
+    private static class ChainUntrustedException extends Exception {
+        public ChainUntrustedException() {
+            super("The provided JWT data was not signed by Mojang");
+        }
+
+        public ChainUntrustedException(String message) {
+            super(message);
+        }
+
+        public ChainUntrustedException(Throwable cause) {
+            super(cause);
+        }
     }
 }

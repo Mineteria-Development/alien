@@ -27,6 +27,8 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+        // TODO: This should probably queue the packets until a flush, and only then compress. This would improve the
+        //       effectiveness of compression and reduce CPU time spent compressing.
         ByteBuf length = ctx.alloc().directBuffer(5);
         Varints.encodeSigned(length, msg.readableBytes());
 
@@ -46,6 +48,7 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         ByteBuf decompressed = ctx.alloc().directBuffer();
+        int packetsFound = 0;
         try {
             compressor.inflate(msg, decompressed, MAX_COMPRESSED_SIZE);
 
@@ -53,10 +56,13 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
             while (decompressed.isReadable()) {
                 int length = (int) Varints.decodeUnsigned(decompressed);
                 ByteBuf packet = decompressed.readRetainedSlice(length);
+                packetsFound++;
                 out.add(packet);
             }
         } catch (Exception e) {
-            decompressed.release();
+            for (int i = 0; i < packetsFound + 1; i++) {
+                decompressed.release();
+            }
             throw e;
         }
     }

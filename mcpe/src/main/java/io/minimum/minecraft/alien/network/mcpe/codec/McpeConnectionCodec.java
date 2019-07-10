@@ -22,8 +22,6 @@ public class McpeConnectionCodec extends MessageToMessageCodec<ByteBuf, McpePack
             throw new IllegalArgumentException("Message " + msg.getClass() + " does not have a registered ID");
         }
 
-        System.out.println("Encoding " + msg);
-
         ByteBuf buf = ctx.alloc().directBuffer();
         try {
             Varints.encodeUnsigned(buf, id);

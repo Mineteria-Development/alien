@@ -12,15 +12,14 @@ public class McpeLogin implements McpePacket {
     @Override
     public void decode(ByteBuf buffer) {
         this.protocolVersion = buffer.readInt();
-
-        Varints.decodeUnsigned(buffer); // ???
+        Varints.decodeUnsigned(buffer); // length of the next string, with length included
         this.jwt = McpeUtil.readLELengthAsciiString(buffer);
     }
 
     @Override
     public void encode(ByteBuf buffer) {
         buffer.writeInt(protocolVersion);
-        //Varints.encodeSigned(this.jwt.length()); // ???
+        Varints.encodeSigned(buffer, this.jwt.length() + 4); // length of the next string, with length included
         McpeUtil.writeLELengthAsciiString(buffer, this.jwt);
     }
 
