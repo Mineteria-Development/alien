@@ -27,14 +27,19 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        ByteBuf buf = ctx.alloc().directBuffer();
-        Varints.encodeSigned(buf, msg.readableBytes());
+        ByteBuf length = ctx.alloc().directBuffer(5);
+        Varints.encodeSigned(length, msg.readableBytes());
+
+        ByteBuf composed = ctx.alloc().compositeDirectBuffer(2).addComponents(true, length, msg);
+        ByteBuf compressed = ctx.alloc().directBuffer();
         try {
-            compressor.deflate(msg, buf);
-            out.add(buf);
+            compressor.deflate(composed, compressed);
+            out.add(compressed);
         } catch (Exception e) {
-            buf.release();
+            compressed.release();
             throw e;
+        } finally {
+            composed.release();
         }
     }
 
