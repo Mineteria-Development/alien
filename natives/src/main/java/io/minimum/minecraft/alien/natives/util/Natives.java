@@ -6,12 +6,15 @@ import io.minimum.minecraft.alien.natives.encryption.JavaVelocityCipher;
 import io.minimum.minecraft.alien.natives.NativeSetupException;
 import io.minimum.minecraft.alien.natives.compression.VelocityCompressorFactory;
 import io.minimum.minecraft.alien.natives.encryption.VelocityCipherFactory;
+import io.minimum.minecraft.alien.natives.hash.AlienHash;
+import io.minimum.minecraft.alien.natives.hash.JavaAlienHash;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.function.Supplier;
 
 public class Natives {
 
@@ -55,5 +58,12 @@ public class Natives {
           new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
           }, "Java", JavaVelocityCipher.FACTORY)
       )
+  );
+
+  public static final NativeCodeLoader<Supplier<AlienHash>> hash = new NativeCodeLoader<>(
+          ImmutableList.of(
+                  new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
+                  }, "Java", JavaAlienHash::new)
+          )
   );
 }

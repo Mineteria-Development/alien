@@ -6,6 +6,7 @@ import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.List;
 import java.util.zip.Deflater;
@@ -29,12 +30,14 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         // TODO: This should probably queue the packets until a flush, and only then compress. This would improve the
         //       effectiveness of compression and reduce CPU time spent compressing.
-        ByteBuf length = ctx.alloc().directBuffer(5);
-        Varints.encodeSigned(length, msg.readableBytes());
-
-        ByteBuf composed = ctx.alloc().compositeDirectBuffer(2).addComponents(true, length, msg);
+        ByteBuf composed = ctx.alloc().directBuffer();
         ByteBuf compressed = ctx.alloc().directBuffer();
         try {
+            LogManager.getLogger().info("MCPE Compressor");
+
+            Varints.encodeSigned(composed, msg.readableBytes());
+            composed.writeBytes(msg);
+
             compressor.deflate(composed, compressed);
             out.add(compressed);
         } catch (Exception e) {

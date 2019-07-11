@@ -1,6 +1,7 @@
 package io.minimum.minecraft.alien.network.mcpe.listener;
 
 import com.google.common.base.Preconditions;
+import io.minimum.minecraft.alien.network.mcpe.codec.McpeEncryptionCodec;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacket;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacketHandler;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.SocketAddress;
+import java.security.GeneralSecurityException;
 
 public class McpeConnection extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LogManager.getLogger(McpeConnection.class);
@@ -45,6 +47,14 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
         }
     }
 
+    public void write(Object packet) {
+        channel.write(packet, channel.voidPromise());
+    }
+
+    public void write(Object packet, ChannelFutureListener listener) {
+        channel.write(packet).addListener(listener);
+    }
+
     public McpePacketHandler getPacketHandler() {
         return packetHandler;
     }
@@ -55,5 +65,10 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
 
     public SocketAddress getRemoteAddress() {
         return channel.remoteAddress();
+    }
+
+    public void enableEncryption(byte[] serverKey) throws GeneralSecurityException {
+        McpeEncryptionCodec encryptionCodec = new McpeEncryptionCodec(serverKey);
+        channel.pipeline().addBefore("alien-compression", "alien-encryption", encryptionCodec);
     }
 }

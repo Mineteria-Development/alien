@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.handler;
+package io.minimum.minecraft.alien.network.mcpe.proxy.handler;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -8,17 +8,15 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.proc.JWSVerifierFactory;
+import io.minimum.minecraft.alien.network.mcpe.data.AuthData;
 import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpePacketHandler;
+import io.minimum.minecraft.alien.network.mcpe.packet.*;
+import io.minimum.minecraft.alien.network.mcpe.util.EncryptionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
@@ -57,15 +55,17 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     @Override
+    public void connected() {
+
+    }
+
+    @Override
     public void disconnected() {
 
     }
 
     @Override
     public void handle(McpeLogin packet) {
-        // This is the first MCPE packet we receive once RakNet negotiation succeeds. It contains the protocol version
-        // and a chain of trust of JSON Web Tokens.
-
         // Verify the JWT chain of trust.
         JsonObject desiredData;
         try {
@@ -82,18 +82,42 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
             return;
         }
 
-        LOGGER.info("I have a gift for you. {}", desiredData);
-        connection.close("I don't do much yet.");
+        // We have valid data and can now proceed to enabling encryption.
+        AuthData data = GSON.fromJson(desiredData, AuthData.class);
+        PublicKey playerKey;
+        try {
+            playerKey = getKey(data.getIdentityPublicKey());
+            startEncryptionHandshake(playerKey);
+        } catch (Exception e) {
+            LOGGER.error("Can't enable encryption", e);
+            connection.close("Internal server error");
+        }
+    }
+
+    private void startEncryptionHandshake(PublicKey key) throws Exception {
+        // Generate a fresh key for each session
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        generator.initialize(new ECGenParameterSpec("secp384r1"));
+        KeyPair serverKeyPair = generator.generateKeyPair();
+
+        // Generate required cryptographic keys
+        byte[] token = EncryptionUtil.generateRandomToken();
+        byte[] serverKey = EncryptionUtil.getServerKey(serverKeyPair, key, token);
+
+        // Send the packet to enable encryption on the client. Once written, immediately enable encryption.
+        connection.write(EncryptionUtil.createHandshake(serverKeyPair, token), future -> {
+            if (future.isSuccess()) {
+                connection.enableEncryption(serverKey);
+            } else {
+                LOGGER.error("Can't enable encryption", future.cause());
+                connection.close("Internal server error");
+            }
+        });
     }
 
     @Override
-    public void handle(McpeDisconnect mcpeDisconnect) {
-
-    }
-
-    @Override
-    public void connected() {
-
+    public void handle(McpeClientToServerEncryptionHandshake packet) {
+        connection.close("Encryption test");
     }
 
     private boolean verify(Key key, JWSObject object) throws JOSEException {

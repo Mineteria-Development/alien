@@ -1,7 +1,19 @@
 package io.minimum.minecraft.alien.network.mcpe.util;
 
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeServerToClientEncryptionHandshake;
+
 import javax.crypto.KeyAgreement;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.*;
+import java.util.Base64;
+import java.util.Date;
 
 public class EncryptionUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -36,6 +48,22 @@ public class EncryptionUtil {
         agreement.init(serverPair.getPrivate());
         agreement.doPhase(clientKey, true);
         return agreement.generateSecret();
+    }
+
+    public static McpeServerToClientEncryptionHandshake createHandshake(KeyPair serverPair, byte[] token) throws JOSEException, URISyntaxException {
+        SignedJWT object = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.ES384)
+                         .x509CertURL(new URI(Base64.getEncoder().encodeToString(serverPair.getPublic().getEncoded())))
+                         .build(),
+                new JWTClaimsSet.Builder()
+                        .claim("salt", Base64.getEncoder().encodeToString(token))
+                        .issueTime(new Date())
+                        .expirationTime(new Date(System.currentTimeMillis() + 30000))
+                        .issuer("Alien")
+                        .build()
+        );
+        object.sign(new ECDSASigner(serverPair.getPrivate(), Curve.P_384));
+        return new McpeServerToClientEncryptionHandshake(object.serialize());
     }
 
     public static byte[] generateRandomToken() {

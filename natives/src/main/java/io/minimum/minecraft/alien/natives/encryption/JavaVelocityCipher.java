@@ -16,13 +16,13 @@ public class JavaVelocityCipher implements VelocityCipher {
 
   public static final VelocityCipherFactory FACTORY = new VelocityCipherFactory() {
     @Override
-    public VelocityCipher forEncryption(SecretKey key) throws GeneralSecurityException {
-      return new JavaVelocityCipher(true, key);
+    public VelocityCipher forEncryption(SecretKey key, byte[] iv) throws GeneralSecurityException {
+      return new JavaVelocityCipher(true, key, iv);
     }
 
     @Override
-    public VelocityCipher forDecryption(SecretKey key) throws GeneralSecurityException {
-      return new JavaVelocityCipher(false, key);
+    public VelocityCipher forDecryption(SecretKey key, byte[] iv) throws GeneralSecurityException {
+      return new JavaVelocityCipher(false, key, iv);
     }
   };
   private static final int INITIAL_BUFFER_SIZE = 1024 * 8;
@@ -36,10 +36,10 @@ public class JavaVelocityCipher implements VelocityCipher {
   private final Cipher cipher;
   private boolean disposed = false;
 
-  private JavaVelocityCipher(boolean encrypt, SecretKey key) throws GeneralSecurityException {
+  private JavaVelocityCipher(boolean encrypt, SecretKey key, byte[] iv) throws GeneralSecurityException {
     this.cipher = Cipher.getInstance("AES/CFB8/NoPadding");
     this.cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, key,
-        new IvParameterSpec(key.getEncoded()));
+        new IvParameterSpec(iv));
   }
 
   @Override

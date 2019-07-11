@@ -5,6 +5,7 @@ import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.List;
 
@@ -24,6 +25,8 @@ public class McpeConnectionCodec extends MessageToMessageCodec<ByteBuf, McpePack
 
         ByteBuf buf = ctx.alloc().directBuffer();
         try {
+            LogManager.getLogger().info("MCPE Encoder");
+
             Varints.encodeUnsigned(buf, id);
             msg.encode(buf);
             out.add(buf);

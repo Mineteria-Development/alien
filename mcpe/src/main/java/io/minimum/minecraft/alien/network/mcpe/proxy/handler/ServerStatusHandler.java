@@ -1,11 +1,10 @@
-package io.minimum.minecraft.alien.network.mcpe.handler;
+package io.minimum.minecraft.alien.network.mcpe.proxy.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import network.ycc.raknet.RakNet;
 import network.ycc.raknet.config.DefaultConfig;
-import network.ycc.raknet.config.DefaultMagic;
 import network.ycc.raknet.packet.Packet;
 import network.ycc.raknet.packet.UnconnectedPing;
 import network.ycc.raknet.packet.UnconnectedPong;

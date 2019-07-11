@@ -5,13 +5,20 @@ import io.netty.channel.epoll.Epoll;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.crypto.Cipher;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 
 public class Alien {
     private static final Logger LOGGER = LogManager.getLogger(Alien.class);
 
     public static void main(String... args) throws InterruptedException, UnknownHostException {
+        if (!isJCEUnlimitedStrength()) {
+            // barf
+            LOGGER.error("You don't have unlimited strength JCE policies installed.");
+            System.exit(1);
+        }
         boolean canUseSoReusePort = Epoll.isAvailable();
         if (!canUseSoReusePort) {
             LOGGER.warn("Your OS does not support SO_REUSEPORT. This means your proxy will use just one thread to");
@@ -23,6 +30,18 @@ public class Alien {
 
         while (true) {
             Thread.sleep(1000);
+        }
+    }
+
+    public static boolean isJCEUnlimitedStrength()
+    {
+        try
+        {
+            return Cipher.getMaxAllowedKeyLength( "AES" ) == Integer.MAX_VALUE;
+        } catch ( NoSuchAlgorithmException e )
+        {
+            // AES should always exist.
+            throw new AssertionError( e );
         }
     }
 }

@@ -5,15 +5,14 @@ import io.minimum.minecraft.alien.network.mcpe.codec.DatagramPacketAbsorber;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpeCompressionCodec;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpeConnectionCodec;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpePacketRegistry;
-import io.minimum.minecraft.alien.network.mcpe.handler.InitialNetworkPacketHandler;
-import io.minimum.minecraft.alien.network.mcpe.handler.ServerStatusHandler;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeClientToServerEncryptionHandshake;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeServerToClientEncryptionHandshake;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import network.ycc.raknet.RakNet;
-import network.ycc.raknet.pipeline.AbstractConnectionInitializer;
 import network.ycc.raknet.pipeline.UserDataCodec;
 import network.ycc.raknet.server.RakNetServer;
 
@@ -31,6 +30,8 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
     public boolean bind() {
         final McpePacketRegistry registry = new McpePacketRegistry();
         registry.register(0x01, McpeLogin.class, McpeLogin::new);
+        registry.register(0x03, McpeServerToClientEncryptionHandshake.class, McpeServerToClientEncryptionHandshake::new);
+        registry.register(0x04, McpeClientToServerEncryptionHandshake.class, McpeClientToServerEncryptionHandshake::new);
         registry.register(0x05, McpeDisconnect.class, McpeDisconnect::new);
 
         this.channel = new ServerBootstrap()
@@ -40,7 +41,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast("server-status", new ServerStatusHandler());
+                        ch.pipeline().addLast("server-status", new io.minimum.minecraft.alien.network.mcpe.proxy.handler.ServerStatusHandler());
 
                         ch.eventLoop().execute(() -> {
                             ch.pipeline().addLast("datagram-absorber", new DatagramPacketAbsorber());
@@ -53,14 +54,6 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
                         // Get the MCPE user data packet too
                         ch.pipeline().addLast(UserDataCodec.NAME, new UserDataCodec(0xFE));
 
-                        ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                System.out.println(msg);
-                                ctx.fireChannelRead(msg);
-                            }
-                        });
-
                         // The client sends compressed packets immediately, so we need to inject a compressor immediately
                         ch.pipeline().addLast("alien-compression", new McpeCompressionCodec());
 
@@ -69,7 +62,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
 
                         // Handle MCPE packets
                         McpeConnection mc = new McpeConnection(ch, null);
-                        mc.setPacketHandler(new InitialNetworkPacketHandler(mc));
+                        mc.setPacketHandler(new io.minimum.minecraft.alien.network.mcpe.proxy.handler.InitialNetworkPacketHandler(mc));
                         ch.pipeline().addLast("alien-mcpe", mc);
                     }
                 }).bind(bound).syncUninterruptibly().channel();

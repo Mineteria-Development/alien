@@ -5,7 +5,19 @@ public interface McpePacketHandler {
 
     void disconnected();
 
-    void handle(McpeLogin packet);
+    default void handle(McpeLogin packet) {
 
-    void handle(McpeDisconnect mcpeDisconnect);
+    }
+
+    default void handle(McpeDisconnect packet) {
+
+    }
+
+    default void handle(McpeServerToClientEncryptionHandshake packet) {
+
+    }
+
+    default void handle(McpeClientToServerEncryptionHandshake packet) {
+
+    }
 }

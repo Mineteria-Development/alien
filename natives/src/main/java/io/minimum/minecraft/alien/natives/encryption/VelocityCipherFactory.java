@@ -5,7 +5,7 @@ import java.security.GeneralSecurityException;
 
 public interface VelocityCipherFactory {
 
-  VelocityCipher forEncryption(SecretKey key) throws GeneralSecurityException;
+  VelocityCipher forEncryption(SecretKey key, byte[] iv) throws GeneralSecurityException;
 
-  VelocityCipher forDecryption(SecretKey key) throws GeneralSecurityException;
+  VelocityCipher forDecryption(SecretKey key, byte[] iv) throws GeneralSecurityException;
 }
