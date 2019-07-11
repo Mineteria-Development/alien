@@ -18,52 +18,52 @@ import java.util.function.Supplier;
 
 public class Natives {
 
-  private Natives() {
-    throw new AssertionError();
-  }
+    private Natives() {
+        throw new AssertionError();
+    }
 
-  private static Runnable copyAndLoadNative(String path) {
-    return () -> {
-      try {
-        Path tempFile = Files.createTempFile("native-", path.substring(path.lastIndexOf('.')));
-        InputStream nativeLib = Natives.class.getResourceAsStream(path);
-        if (nativeLib == null) {
-          throw new IllegalStateException("Native library " + path + " not found.");
-        }
+    private static Runnable copyAndLoadNative(String path) {
+        return () -> {
+            try {
+                Path tempFile = Files.createTempFile("native-", path.substring(path.lastIndexOf('.')));
+                InputStream nativeLib = Natives.class.getResourceAsStream(path);
+                if (nativeLib == null) {
+                    throw new IllegalStateException("Native library " + path + " not found.");
+                }
 
-        Files.copy(nativeLib, tempFile, StandardCopyOption.REPLACE_EXISTING);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-          try {
-            Files.deleteIfExists(tempFile);
-          } catch (IOException ignored) {
-            // Well, it doesn't matter...
-          }
-        }));
-        System.load(tempFile.toAbsolutePath().toString());
-      } catch (IOException e) {
-        throw new NativeSetupException("Unable to copy natives", e);
-      }
-    };
-  }
+                Files.copy(nativeLib, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try {
+                        Files.deleteIfExists(tempFile);
+                    } catch (IOException ignored) {
+                        // Well, it doesn't matter...
+                    }
+                }));
+                System.load(tempFile.toAbsolutePath().toString());
+            } catch (IOException e) {
+                throw new NativeSetupException("Unable to copy natives", e);
+            }
+        };
+    }
 
-  public static final NativeCodeLoader<VelocityCompressorFactory> compress = new NativeCodeLoader<>(
-      ImmutableList.of(
-          new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
-          }, "Java", JavaVelocityCompressor.FACTORY)
-      )
-  );
+    public static final NativeCodeLoader<VelocityCompressorFactory> compress = new NativeCodeLoader<>(
+            ImmutableList.of(
+                    new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
+                    }, "Java", JavaVelocityCompressor.FACTORY)
+            )
+    );
 
-  public static final NativeCodeLoader<VelocityCipherFactory> cipher = new NativeCodeLoader<>(
-      ImmutableList.of(
-          new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
-          }, "Java", JavaVelocityCipher.FACTORY)
-      )
-  );
+    public static final NativeCodeLoader<VelocityCipherFactory> cipher = new NativeCodeLoader<>(
+            ImmutableList.of(
+                    new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
+                    }, "Java", JavaVelocityCipher.FACTORY)
+            )
+    );
 
-  public static final NativeCodeLoader<Supplier<AlienHash>> hash = new NativeCodeLoader<>(
-          ImmutableList.of(
-                  new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
-                  }, "Java", JavaAlienHash::new)
-          )
-  );
+    public static final NativeCodeLoader<Supplier<AlienHash>> hash = new NativeCodeLoader<>(
+            ImmutableList.of(
+                    new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {
+                    }, "Java", JavaAlienHash::new)
+            )
+    );
 }

@@ -50,6 +50,7 @@ public class McpeUtil {
         int length = buffer.readIntLE();
         return (AsciiString) buffer.readCharSequence(length, StandardCharsets.US_ASCII);
     }
+
     /*
 
     public static void writeBlockCoords(ByteBuf buf, Vector3i vector3i) {

@@ -9,6 +9,8 @@ import io.minimum.minecraft.alien.network.mcpe.packet.McpeClientToServerEncrypti
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeServerToClientEncryptionHandshake;
+import io.minimum.minecraft.alien.network.mcpe.proxy.handler.InitialNetworkPacketHandler;
+import io.minimum.minecraft.alien.network.mcpe.proxy.handler.ServerStatusHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -41,7 +43,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast("server-status", new io.minimum.minecraft.alien.network.mcpe.proxy.handler.ServerStatusHandler());
+                        ch.pipeline().addLast("server-status", new ServerStatusHandler());
 
                         ch.eventLoop().execute(() -> {
                             ch.pipeline().addLast("datagram-absorber", new DatagramPacketAbsorber());
@@ -62,7 +64,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
 
                         // Handle MCPE packets
                         McpeConnection mc = new McpeConnection(ch, null);
-                        mc.setPacketHandler(new io.minimum.minecraft.alien.network.mcpe.proxy.handler.InitialNetworkPacketHandler(mc));
+                        mc.setPacketHandler(new InitialNetworkPacketHandler(mc));
                         ch.pipeline().addLast("alien-mcpe", mc);
                     }
                 }).bind(bound).syncUninterruptibly().channel();

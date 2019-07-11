@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 public interface SessionConnection {
     /**
      * Returns the remote address for this connection.
+     *
      * @return the remote address
      */
     InetSocketAddress getRemoteAddress();
@@ -19,6 +20,7 @@ public interface SessionConnection {
 
     /**
      * Returns whether or not the session has been closed.
+     *
      * @return whether or not the session has been closed
      */
     boolean isClosed();

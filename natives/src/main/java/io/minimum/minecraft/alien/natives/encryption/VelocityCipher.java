@@ -9,7 +9,7 @@ import javax.crypto.ShortBufferException;
 
 public interface VelocityCipher extends Disposable, Native {
 
-  void process(ByteBuf source, ByteBuf destination) throws ShortBufferException;
+    void process(ByteBuf source, ByteBuf destination) throws ShortBufferException;
 
-  ByteBuf process(ChannelHandlerContext ctx, ByteBuf source) throws ShortBufferException;
+    ByteBuf process(ChannelHandlerContext ctx, ByteBuf source) throws ShortBufferException;
 }

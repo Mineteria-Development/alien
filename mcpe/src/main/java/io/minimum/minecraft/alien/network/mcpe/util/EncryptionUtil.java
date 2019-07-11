@@ -53,8 +53,8 @@ public class EncryptionUtil {
     public static McpeServerToClientEncryptionHandshake createHandshake(KeyPair serverPair, byte[] token) throws JOSEException, URISyntaxException {
         SignedJWT object = new SignedJWT(
                 new JWSHeader.Builder(JWSAlgorithm.ES384)
-                         .x509CertURL(new URI(Base64.getEncoder().encodeToString(serverPair.getPublic().getEncoded())))
-                         .build(),
+                        .x509CertURL(new URI(Base64.getEncoder().encodeToString(serverPair.getPublic().getEncoded())))
+                        .build(),
                 new JWTClaimsSet.Builder()
                         .claim("salt", Base64.getEncoder().encodeToString(token))
                         .issueTime(new Date())

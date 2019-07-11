@@ -33,15 +33,12 @@ public class Alien {
         }
     }
 
-    public static boolean isJCEUnlimitedStrength()
-    {
-        try
-        {
-            return Cipher.getMaxAllowedKeyLength( "AES" ) == Integer.MAX_VALUE;
-        } catch ( NoSuchAlgorithmException e )
-        {
+    public static boolean isJCEUnlimitedStrength() {
+        try {
+            return Cipher.getMaxAllowedKeyLength("AES") == Integer.MAX_VALUE;
+        } catch (NoSuchAlgorithmException e) {
             // AES should always exist.
-            throw new AssertionError( e );
+            throw new AssertionError(e);
         }
     }
 }
