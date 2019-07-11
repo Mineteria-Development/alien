@@ -19,8 +19,6 @@ public class ServerStatusHandler extends UdpPacketHandler<UnconnectedPing> {
 
     @Override
     protected void handle(ChannelHandlerContext ctx, InetSocketAddress sender, UnconnectedPing packet) {
-        System.out.println("Inbound ping: " + packet);
-
         UnconnectedPong pong = new UnconnectedPong();
         pong.setClientTime(packet.getClientTime());
         pong.setMagic(DefaultConfig.DEFAULT_MAGIC);

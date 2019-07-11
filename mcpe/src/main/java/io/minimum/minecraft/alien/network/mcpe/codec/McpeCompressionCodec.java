@@ -6,7 +6,6 @@ import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
-import org.apache.logging.log4j.LogManager;
 
 import java.util.List;
 import java.util.zip.Deflater;
@@ -33,8 +32,6 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
         ByteBuf composed = ctx.alloc().directBuffer();
         ByteBuf compressed = ctx.alloc().directBuffer();
         try {
-            LogManager.getLogger().info("MCPE Compressor");
-
             Varints.encodeSigned(composed, msg.readableBytes());
             composed.writeBytes(msg);
 
