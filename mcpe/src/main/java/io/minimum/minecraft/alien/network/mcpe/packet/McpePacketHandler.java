@@ -20,4 +20,16 @@ public interface McpePacketHandler {
     default void handle(McpeClientToServerEncryptionHandshake packet) {
 
     }
+
+    default void handle(McpePlayStatus status) {
+
+    }
+
+    default void handle(McpeResourcePacks packet) {
+
+    }
+
+    default void handle(McpeResourcePackResponse packet) {
+
+    }
 }

@@ -5,10 +5,7 @@ import io.minimum.minecraft.alien.network.mcpe.codec.DatagramPacketAbsorber;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpeCompressionCodec;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpeConnectionCodec;
 import io.minimum.minecraft.alien.network.mcpe.codec.McpePacketRegistry;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeClientToServerEncryptionHandshake;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeDisconnect;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
-import io.minimum.minecraft.alien.network.mcpe.packet.McpeServerToClientEncryptionHandshake;
+import io.minimum.minecraft.alien.network.mcpe.packet.*;
 import io.minimum.minecraft.alien.network.mcpe.proxy.handler.InitialNetworkPacketHandler;
 import io.minimum.minecraft.alien.network.mcpe.proxy.handler.ServerStatusHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -32,9 +29,13 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
     public boolean bind() {
         final McpePacketRegistry registry = new McpePacketRegistry();
         registry.register(0x01, McpeLogin.class, McpeLogin::new);
+        registry.register(0x02, McpePlayStatus.class, McpePlayStatus::new);
         registry.register(0x03, McpeServerToClientEncryptionHandshake.class, McpeServerToClientEncryptionHandshake::new);
         registry.register(0x04, McpeClientToServerEncryptionHandshake.class, McpeClientToServerEncryptionHandshake::new);
         registry.register(0x05, McpeDisconnect.class, McpeDisconnect::new);
+        registry.register(0x06, McpeResourcePacks.class, McpeResourcePacks::new);
+        registry.register(0x07, McpeResourcePackStack.class, McpeResourcePackStack::new);
+        registry.register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new);
 
         this.channel = new ServerBootstrap()
                 .group(new NioEventLoopGroup(), new DefaultEventLoopGroup())

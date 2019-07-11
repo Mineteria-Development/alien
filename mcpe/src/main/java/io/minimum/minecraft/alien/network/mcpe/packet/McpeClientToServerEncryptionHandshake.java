@@ -17,4 +17,9 @@ public class McpeClientToServerEncryptionHandshake implements McpePacket {
     public void handle(McpePacketHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return "McpeClientToServerEncryptionHandshake";
+    }
 }

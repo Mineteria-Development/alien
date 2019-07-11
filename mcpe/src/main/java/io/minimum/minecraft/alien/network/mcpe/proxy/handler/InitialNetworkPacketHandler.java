@@ -117,7 +117,13 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
 
     @Override
     public void handle(McpeClientToServerEncryptionHandshake packet) {
-        connection.close("Encryption test");
+        handleResourcePack();
+    }
+
+    private void handleResourcePack() {
+        ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(connection);
+        connection.setPacketHandler(newHandler);
+        newHandler.initialize();
     }
 
     private boolean verify(Key key, JWSObject object) throws JOSEException {
