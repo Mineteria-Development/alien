@@ -1,6 +1,8 @@
 package io.minimum.minecraft.alien;
 
 import io.minimum.minecraft.alien.network.mcpe.listener.McpeOverYesdogRakNetNetworkListener;
+import io.minimum.minecraft.alien.network.util.TransportType;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +28,12 @@ public class Alien {
             LOGGER.warn("will inevitably result in scalability bottlenecks. As a result, you should ONLY run Alien");
             LOGGER.warn("on a recent Linux distribution, so it can use SO_REUSEPORT.");
         }
-        new McpeOverYesdogRakNetNetworkListener(new InetSocketAddress("127.0.0.1", 19132)).bind();
+
+        TransportType type = TransportType.bestType();
+        EventLoopGroup boss = type.createEventLoopGroup(TransportType.Type.BOSS);
+        EventLoopGroup worker = type.createEventLoopGroup(TransportType.Type.WORKER);
+
+        new McpeOverYesdogRakNetNetworkListener(new InetSocketAddress("127.0.0.1", 19132)).bind(type, boss, worker);
 
         while (true) {
             Thread.sleep(1000);

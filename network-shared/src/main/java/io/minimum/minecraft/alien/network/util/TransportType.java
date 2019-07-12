@@ -14,7 +14,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.BiFunction;
 
-enum TransportType {
+public enum TransportType {
     NIO("NIO", NioServerSocketChannel.class, NioSocketChannel.class, NioDatagramChannel.class,
             (name, type) -> new NioEventLoopGroup(0, createThreadFactory(name, type))),
     EPOLL("epoll", EpollServerSocketChannel.class, EpollSocketChannel.class,
@@ -63,6 +63,18 @@ enum TransportType {
         } else {
             return NIO;
         }
+    }
+
+    public Class<? extends ServerSocketChannel> getServerSocketChannelClass() {
+        return serverSocketChannelClass;
+    }
+
+    public Class<? extends SocketChannel> getSocketChannelClass() {
+        return socketChannelClass;
+    }
+
+    public Class<? extends DatagramChannel> getDatagramChannelClass() {
+        return datagramChannelClass;
     }
 
     public enum Type {

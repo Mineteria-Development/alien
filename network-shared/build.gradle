@@ -6,8 +6,8 @@ dependencies {
     compile 'io.netty:netty-codec:4.1.37.Final'
     compile 'io.netty:netty-handler:4.1.37.Final'
     compile 'com.google.guava:guava:27.0-jre'
-    compile 'io.netty:netty-transport-native-epoll:4.1.37.Final'
-    compile 'io.netty:netty-transport-native-kqueue:4.1.37.Final'
+    compile 'io.netty:netty-transport-native-epoll:4.1.37.Final:linux-x86_64'
+    compile 'io.netty:netty-transport-native-kqueue:4.1.37.Final:osx-x86_64'
     compile 'it.unimi.dsi:fastutil:8.2.2'
     compile 'org.apache.logging.log4j:log4j-api:2.12.0'
 }

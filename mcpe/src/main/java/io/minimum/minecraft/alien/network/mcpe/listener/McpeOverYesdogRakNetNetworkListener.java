@@ -8,12 +8,13 @@ import io.minimum.minecraft.alien.network.mcpe.codec.McpePacketRegistry;
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
 import io.minimum.minecraft.alien.network.mcpe.proxy.handler.InitialNetworkPacketHandler;
 import io.minimum.minecraft.alien.network.mcpe.proxy.handler.ServerStatusHandler;
+import io.minimum.minecraft.alien.network.util.TransportType;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import network.ycc.raknet.RakNet;
 import network.ycc.raknet.pipeline.UserDataCodec;
 import network.ycc.raknet.server.RakNetServer;
+import network.ycc.raknet.server.channel.RakNetServerChannel;
 
 import java.net.InetSocketAddress;
 
@@ -26,7 +27,7 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
     }
 
     @Override
-    public boolean bind() {
+    public boolean bind(TransportType type, EventLoopGroup boss, EventLoopGroup worker) {
         final McpePacketRegistry registry = new McpePacketRegistry();
         registry.register(0x01, McpeLogin.class, McpeLogin::new);
         registry.register(0x02, McpePlayStatus.class, McpePlayStatus::new);
@@ -38,8 +39,8 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
         registry.register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new);
 
         this.channel = new ServerBootstrap()
-                .group(new NioEventLoopGroup(), new DefaultEventLoopGroup())
-                .channel(RakNetServer.CHANNEL)
+                .group(boss, worker) // NB: this is fairly useless if we do SO_REUSEPORT
+                .channelFactory(() -> new RakNetServerChannel(type.getDatagramChannelClass()))
                 .option(RakNet.SERVER_ID, 0xdeadf001L)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
