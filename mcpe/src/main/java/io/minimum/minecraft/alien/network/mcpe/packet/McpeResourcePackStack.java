@@ -18,7 +18,7 @@ public class McpeResourcePackStack implements McpePacket {
     }
 
     @Override
-    public void handle(McpePacketHandler handler) {
-
+    public boolean handle(McpePacketHandler handler) {
+        return true;
     }
 }

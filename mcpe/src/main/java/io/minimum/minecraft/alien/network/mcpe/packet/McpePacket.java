@@ -7,5 +7,5 @@ public interface McpePacket {
 
     void encode(ByteBuf buf);
 
-    void handle(McpePacketHandler handler);
+    boolean handle(McpePacketHandler handler);
 }

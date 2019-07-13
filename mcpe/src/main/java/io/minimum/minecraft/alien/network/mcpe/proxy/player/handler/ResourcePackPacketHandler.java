@@ -21,11 +21,12 @@ class ResourcePackPacketHandler implements McpePacketHandler {
     }
 
     @Override
-    public void handle(McpeResourcePackResponse packet) {
+    public boolean handle(McpeResourcePackResponse packet) {
         if (packet.getStatus() == McpeResourcePackResponse.HAVE_PACKS) {
             connection.write(new McpeResourcePackStack());
         } else if (packet.getStatus() == McpeResourcePackResponse.COMPLETED || packet.getStatus() == McpeResourcePackResponse.REJECTED){
             connection.close("Resource pack testing");
         }
+        return true;
     }
 }

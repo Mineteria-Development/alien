@@ -36,9 +36,11 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
             LOGGER.info("Received message {}", msg);
 
             if (packetHandler != null) {
-                if (msg instanceof McpePacket) {
-                    ((McpePacket) msg).handle(packetHandler);
+                if (msg instanceof McpePacket && ((McpePacket) msg).handle(packetHandler)) {
+                    return;
                 }
+
+                packetHandler.handleGeneric(msg);
             }
         } finally {
             ReferenceCountUtil.release(msg);

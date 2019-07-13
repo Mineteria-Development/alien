@@ -22,15 +22,17 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
     }
 
     @Override
-    public void handle(McpeServerToClientEncryptionHandshake packet) {
+    public boolean handle(McpeServerToClientEncryptionHandshake packet) {
         throw new IllegalStateException("Proxy does not support encryption yet!");
     }
 
     @Override
-    public void handle(McpeResourcePacks packet) {
+    public boolean handle(McpeResourcePacks packet) {
         // pretend we have the resource pack
         remoteServer.write(new McpeResourcePackResponse(McpeResourcePackResponse.ACCEPTED));
         remoteServer.write(new McpeResourcePackResponse(McpeResourcePackResponse.HAVE_PACKS));
         remoteServer.write(new McpeResourcePackResponse(McpeResourcePackResponse.COMPLETED));
+
+        return true;
     }
 }

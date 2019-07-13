@@ -11,31 +11,35 @@ public interface McpePacketHandler {
 
     void exception(Throwable throwable);
 
-    default void handle(McpeLogin packet) {
+    default void handleGeneric(Object message) {
 
     }
 
-    default void handle(McpeDisconnect packet) {
-
+    default boolean handle(McpeLogin packet) {
+        return true;
     }
 
-    default void handle(McpeServerToClientEncryptionHandshake packet) {
-
+    default boolean handle(McpeDisconnect packet) {
+        return true;
     }
 
-    default void handle(McpeClientToServerEncryptionHandshake packet) {
-
+    default boolean handle(McpeServerToClientEncryptionHandshake packet) {
+        return true;
     }
 
-    default void handle(McpePlayStatus status) {
-
+    default boolean handle(McpeClientToServerEncryptionHandshake packet) {
+        return true;
     }
 
-    default void handle(McpeResourcePacks packet) {
-
+    default boolean handle(McpePlayStatus status) {
+        return true;
     }
 
-    default void handle(McpeResourcePackResponse packet) {
+    default boolean handle(McpeResourcePacks packet) {
+        return true;
+    }
 
+    default boolean handle(McpeResourcePackResponse packet) {
+        return true;
     }
 }

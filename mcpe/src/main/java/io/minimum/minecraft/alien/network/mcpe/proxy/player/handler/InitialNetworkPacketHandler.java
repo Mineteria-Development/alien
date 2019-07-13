@@ -59,7 +59,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     @Override
-    public void handle(McpeLogin packet) {
+    public boolean handle(McpeLogin packet) {
         // Verify the JWT chain of trust.
         JsonObject desiredData;
         try {
@@ -67,13 +67,13 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
         } catch (ChainUntrustedException e) {
             LOGGER.error("Unable to verify chain of trust for connection {}", connection.getRemoteAddress(), e);
             connection.close("Internal server error");
-            return;
+            return true;
         }
 
         if (desiredData == null) {
             LOGGER.error("No extraData found for {}", connection.getRemoteAddress());
             connection.close("Internal server error");
-            return;
+            return true;
         }
 
         // We have valid data and can now proceed to enabling encryption.
@@ -86,6 +86,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
             LOGGER.error("Can't enable encryption", e);
             connection.close("Internal server error");
         }
+        return true;
     }
 
     private void startEncryptionHandshake(PublicKey key) throws Exception {
@@ -105,8 +106,9 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     @Override
-    public void handle(McpeClientToServerEncryptionHandshake packet) {
+    public boolean handle(McpeClientToServerEncryptionHandshake packet) {
         handleResourcePack();
+        return true;
     }
 
     private void handleResourcePack() {
