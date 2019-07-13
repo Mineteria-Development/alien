@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.codec;
+package io.minimum.minecraft.alien.network.mcpe.pipeline.codec;
 
 import io.minimum.minecraft.alien.natives.encryption.VelocityCipher;
 import io.minimum.minecraft.alien.natives.hash.AlienHash;

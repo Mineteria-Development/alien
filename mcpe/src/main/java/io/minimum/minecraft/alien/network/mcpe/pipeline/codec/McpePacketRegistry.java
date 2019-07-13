@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.codec;
+package io.minimum.minecraft.alien.network.mcpe.pipeline.codec;
 
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -22,7 +22,7 @@ public class McpePacketRegistry {
         this.packetIdsByClass.defaultReturnValue(Integer.MIN_VALUE);
     }
 
-    public <P extends McpePacket> void register(int id, Class<P> packetClass, Supplier<P> supplier) {
+    public <P extends McpePacket> McpePacketRegistry register(int id, Class<P> packetClass, Supplier<P> supplier) {
         checkNotNull(packetClass, "packetClass");
         checkNotNull(supplier, "supplier");
         checkArgument(!packetIdsByClass.containsKey(packetClass), "Packet class already registered");
@@ -30,6 +30,7 @@ public class McpePacketRegistry {
 
         this.packetSuppliersById.put(id, supplier);
         this.packetIdsByClass.put(packetClass, id);
+        return this;
     }
 
     public int getId(Class<? extends McpePacket> packetClass) {

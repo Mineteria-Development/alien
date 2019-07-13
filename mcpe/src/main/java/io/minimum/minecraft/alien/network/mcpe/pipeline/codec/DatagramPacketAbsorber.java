@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.codec;
+package io.minimum.minecraft.alien.network.mcpe.pipeline.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

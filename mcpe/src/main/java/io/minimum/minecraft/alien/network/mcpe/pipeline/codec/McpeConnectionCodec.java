@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.codec;
+package io.minimum.minecraft.alien.network.mcpe.pipeline.codec;
 
 import io.minimum.minecraft.alien.network.mcpe.packet.McpePacket;
 import io.minimum.minecraft.alien.network.mcpe.util.Varints;
@@ -35,10 +35,12 @@ public class McpeConnectionCodec extends MessageToMessageCodec<ByteBuf, McpePack
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+        int ri = msg.readerIndex();
         int id = (int) Varints.decodeUnsigned(msg);
         McpePacket packet = registry.supply(id);
         if (packet == null) {
             // just forward on this message
+            msg.readerIndex(ri);
             out.add(msg.retain());
         } else {
             packet.decode(msg);

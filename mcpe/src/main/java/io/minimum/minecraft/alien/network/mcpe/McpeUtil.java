@@ -37,18 +37,19 @@ public class McpeUtil {
         return data;
     }
 
-    public static void writeLELengthAsciiString(ByteBuf buffer, AsciiString string) {
+    public static void writeLELengthString(ByteBuf buffer, String string) {
         Preconditions.checkNotNull(buffer, "buffer");
         Preconditions.checkNotNull(string, "string");
         buffer.writeIntLE(string.length());
         buffer.writeCharSequence(string, StandardCharsets.US_ASCII);
     }
 
-    public static AsciiString readLELengthAsciiString(ByteBuf buffer) {
+    public static String readLELengthString(ByteBuf buffer) {
         Preconditions.checkNotNull(buffer, "buffer");
-
         int length = buffer.readIntLE();
-        return (AsciiString) buffer.readCharSequence(length, StandardCharsets.US_ASCII);
+        String data = buffer.toString(buffer.readerIndex(), length, StandardCharsets.US_ASCII);
+        buffer.skipBytes(length);
+        return data;
     }
 
     /*

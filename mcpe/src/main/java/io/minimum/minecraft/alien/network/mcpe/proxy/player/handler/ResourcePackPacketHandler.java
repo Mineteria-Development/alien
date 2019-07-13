@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.proxy.handler;
+package io.minimum.minecraft.alien.network.mcpe.proxy.player.handler;
 
 import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
@@ -16,12 +16,7 @@ class ResourcePackPacketHandler implements McpePacketHandler {
     }
 
     @Override
-    public void connected() {
-
-    }
-
-    @Override
-    public void disconnected() {
+    public void exception(Throwable throwable) {
 
     }
 

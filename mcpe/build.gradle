@@ -5,6 +5,7 @@ plugins {
 dependencies {
     compile project(':alien-network-shared')
     compile project(':alien-natives')
+    compile 'network.ycc:netty-raknet-client:0.7-SNAPSHOT'
     compile 'network.ycc:netty-raknet-server:0.7-SNAPSHOT'
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'

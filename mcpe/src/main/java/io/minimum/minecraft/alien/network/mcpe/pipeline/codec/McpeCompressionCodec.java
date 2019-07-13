@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.codec;
+package io.minimum.minecraft.alien.network.mcpe.pipeline.codec;
 
 import io.minimum.minecraft.alien.natives.compression.VelocityCompressor;
 import io.minimum.minecraft.alien.natives.util.Natives;

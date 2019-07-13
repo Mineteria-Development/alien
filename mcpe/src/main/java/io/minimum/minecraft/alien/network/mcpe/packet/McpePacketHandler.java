@@ -1,9 +1,15 @@
 package io.minimum.minecraft.alien.network.mcpe.packet;
 
 public interface McpePacketHandler {
-    void connected();
+    default void connected() {
 
-    void disconnected();
+    }
+
+    default void disconnected() {
+
+    }
+
+    void exception(Throwable throwable);
 
     default void handle(McpeLogin packet) {
 

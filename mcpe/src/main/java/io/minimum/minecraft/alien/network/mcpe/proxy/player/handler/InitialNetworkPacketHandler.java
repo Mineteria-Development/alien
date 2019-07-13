@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.proxy.handler;
+package io.minimum.minecraft.alien.network.mcpe.proxy.player.handler;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.security.*;
-import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
@@ -55,12 +54,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     @Override
-    public void connected() {
-
-    }
-
-    @Override
-    public void disconnected() {
+    public void exception(Throwable throwable) {
 
     }
 
@@ -95,17 +89,12 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     private void startEncryptionHandshake(PublicKey key) throws Exception {
-        // Generate a fresh key for each session
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-        generator.initialize(new ECGenParameterSpec("secp384r1"));
-        KeyPair serverKeyPair = generator.generateKeyPair();
-
         // Generate required cryptographic keys
         byte[] token = EncryptionUtil.generateRandomToken();
-        byte[] serverKey = EncryptionUtil.getServerKey(serverKeyPair, key, token);
+        byte[] serverKey = EncryptionUtil.getServerKey(EncryptionUtil.SERVER_KEY_PAIR, key, token);
 
         // Send the packet to enable encryption on the client. Once written, immediately enable encryption.
-        connection.write(EncryptionUtil.createHandshake(serverKeyPair, token), future -> {
+        connection.write(EncryptionUtil.createHandshake(EncryptionUtil.SERVER_KEY_PAIR, token), future -> {
             if (future.isSuccess()) {
                 connection.enableEncryption(serverKey);
             } else {
@@ -150,6 +139,8 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
                         throw new ChainUntrustedException();
                     }
                 }
+
+                LOGGER.info("Header: {}, Payload: \"{}\"", token.getHeader().toJSONObject().toJSONString(), token.getPayload().toString());
 
                 JsonObject object = GSON.fromJson(token.getPayload().toString(), JsonObject.class);
                 lastKey = getKey(object.getAsJsonPrimitive("identityPublicKey").getAsString());

@@ -1,4 +1,4 @@
-package io.minimum.minecraft.alien.network.mcpe.proxy.handler;
+package io.minimum.minecraft.alien.network.mcpe.proxy.player.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
