@@ -32,7 +32,7 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
         ByteBuf composed = ctx.alloc().directBuffer();
         ByteBuf compressed = ctx.alloc().directBuffer();
         try {
-            Varints.encodeSigned(composed, msg.readableBytes());
+            Varints.encodeUnsigned(composed, msg.readableBytes());
             composed.writeBytes(msg);
 
             compressor.deflate(composed, compressed);

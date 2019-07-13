@@ -2,7 +2,7 @@ package io.minimum.minecraft.alien.network.mcpe.proxy.client;
 
 import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
+import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.handler.InitialServerConnectionSessionHandler;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.RakNetServerTransport;
@@ -42,6 +42,19 @@ public class McpeServerConnection {
         return result;
     }
 
+    public ServerInfo getTarget() {
+        return target;
+    }
+
+    public McpePlayer getPlayer() {
+        return player;
+    }
+
+    @Nullable
+    public McpeConnection getConnection() {
+        return connection;
+    }
+
     private void initiateLogin(Promise<Void> result) {
         Preconditions.checkState(connection != null, "Connection is not active");
 
@@ -49,13 +62,13 @@ public class McpeServerConnection {
         // server.
         McpeLogin login;
         try {
-            login = new McpeLogin(354, EncryptionUtil.createFakeChain(player.getProfile()));
+            login = EncryptionUtil.createFakeChain(player);
         } catch (JOSEException | URISyntaxException e) {
             result.tryFailure(new Exception("Unable to initiate login", e));
             return;
         }
 
-        connection.setPacketHandler(new InitialServerConnectionSessionHandler(connection, player));
+        connection.setSessionHandler(new InitialServerConnectionSessionHandler(this, player));
         connection.write(login);
     }
 }

@@ -1,6 +1,14 @@
 package io.minimum.minecraft.alien.network.mcpe.packet;
 
 public interface McpePacketHandler {
+    default void activated() {
+
+    }
+
+    default void deactivated() {
+
+    }
+
     default void connected() {
 
     }

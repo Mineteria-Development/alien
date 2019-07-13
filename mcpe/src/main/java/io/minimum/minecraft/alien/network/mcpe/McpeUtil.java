@@ -40,14 +40,15 @@ public class McpeUtil {
     public static void writeLELengthString(ByteBuf buffer, String string) {
         Preconditions.checkNotNull(buffer, "buffer");
         Preconditions.checkNotNull(string, "string");
-        buffer.writeIntLE(string.length());
-        buffer.writeCharSequence(string, StandardCharsets.US_ASCII);
+        int len = ByteBufUtil.utf8Bytes(string);
+        buffer.writeIntLE(len);
+        buffer.writeCharSequence(string, StandardCharsets.UTF_8);
     }
 
     public static String readLELengthString(ByteBuf buffer) {
         Preconditions.checkNotNull(buffer, "buffer");
         int length = buffer.readIntLE();
-        String data = buffer.toString(buffer.readerIndex(), length, StandardCharsets.US_ASCII);
+        String data = buffer.toString(buffer.readerIndex(), length, StandardCharsets.UTF_8);
         buffer.skipBytes(length);
         return data;
     }

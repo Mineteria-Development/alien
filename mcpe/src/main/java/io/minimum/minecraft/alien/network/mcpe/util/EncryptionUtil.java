@@ -1,17 +1,20 @@
 package io.minimum.minecraft.alien.network.mcpe.util;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.minimum.minecraft.alien.network.mcpe.data.AuthProfile;
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
+import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeServerToClientEncryptionHandshake;
+import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 
 import javax.crypto.KeyAgreement;
 import java.net.URI;
@@ -85,22 +88,39 @@ public class EncryptionUtil {
         return new McpeServerToClientEncryptionHandshake(object.serialize());
     }
 
-    public static String createFakeChain(AuthProfile profile) throws JOSEException, URISyntaxException {
-        JsonElement payload = GSON.toJsonTree(profile);
+    private static JSONObject fromObjectToMinidevJson(Object o) {
+        return JSONValue.parse(GSON.toJson(o), new JSONObject());
+    }
 
-        SignedJWT object = new SignedJWT(
+    public static McpeLogin createFakeChain(McpePlayer player) throws JOSEException, URISyntaxException {
+        SignedJWT chainData = new SignedJWT(
                 new JWSHeader.Builder(JWSAlgorithm.ES384)
                         .x509CertURL(new URI(Base64.getEncoder().encodeToString(SERVER_KEY_PAIR.getPublic().getEncoded())))
                         .build(),
                 new JWTClaimsSet.Builder()
-                        .claim("extraData", payload.toString())
+                        .claim("certificateAuthority", true)
+                        .claim("extraData", fromObjectToMinidevJson(player.getProfile()))
+                        .claim("identityPublicKey", Base64.getEncoder().encodeToString(SERVER_KEY_PAIR.getPublic().getEncoded()))
                         .issueTime(new Date())
                         .expirationTime(new Date(System.currentTimeMillis() + 30000))
                         .issuer("Alien")
                         .build()
         );
-        object.sign(new ECDSASigner(SERVER_KEY_PAIR.getPrivate(), Curve.P_384));
-        return object.serialize();
+        chainData.sign(new ECDSASigner(SERVER_KEY_PAIR.getPrivate(), Curve.P_384));
+        JWSObject clientData = new JWSObject(
+                new JWSHeader.Builder(JWSAlgorithm.ES384)
+                        .x509CertURL(new URI(Base64.getEncoder().encodeToString(SERVER_KEY_PAIR.getPublic().getEncoded())))
+                        .build(),
+                new Payload(new JSONObject(player.getClientData()))
+        );
+        clientData.sign(new ECDSASigner(SERVER_KEY_PAIR.getPrivate(), Curve.P_384));
+
+        JsonArray fakeChain = new JsonArray();
+        fakeChain.add(chainData.serialize());
+        JsonObject payload = new JsonObject();
+        payload.add("chain", fakeChain);
+
+        return new McpeLogin(354, payload.toString(), clientData.serialize());
     }
 
     public static byte[] generateRandomToken() {

@@ -1,18 +1,22 @@
 package io.minimum.minecraft.alien.network.mcpe.proxy.player.handler;
 
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
+import io.minimum.minecraft.alien.network.mcpe.proxy.client.McpeServerConnection;
+import io.minimum.minecraft.alien.network.mcpe.proxy.data.ServerInfo;
+import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
+
+import java.net.InetSocketAddress;
 
 class ResourcePackPacketHandler implements McpePacketHandler {
-    private final McpeConnection connection;
+    private final McpePlayer player;
 
-    ResourcePackPacketHandler(McpeConnection connection) {
-        this.connection = connection;
+    ResourcePackPacketHandler(McpePlayer player) {
+        this.player = player;
     }
 
     void initialize() {
-        connection.write(new McpePlayStatus(McpePlayStatus.SUCCESS));
-        connection.write(new McpeResourcePacks());
+        player.getConnection().write(new McpePlayStatus(McpePlayStatus.SUCCESS));
+        player.getConnection().write(new McpeResourcePacks());
     }
 
     @Override
@@ -23,10 +27,22 @@ class ResourcePackPacketHandler implements McpePacketHandler {
     @Override
     public boolean handle(McpeResourcePackResponse packet) {
         if (packet.getStatus() == McpeResourcePackResponse.HAVE_PACKS) {
-            connection.write(new McpeResourcePackStack());
+            player.getConnection().write(new McpeResourcePackStack());
         } else if (packet.getStatus() == McpeResourcePackResponse.COMPLETED || packet.getStatus() == McpeResourcePackResponse.REJECTED){
-            connection.close("Resource pack testing");
+            doLogin();
         }
         return true;
+    }
+
+    private void doLogin() {
+        player.getConnection().setSessionHandler(new NoopState());
+        new McpeServerConnection(new ServerInfo("test", new InetSocketAddress("127.0.0.1", 25565)), player)
+                .connect()
+                .addListener(result -> {
+                    if (!result.isSuccess()) {
+                        player.getConnection().closeWith("Connection failed.");
+                        result.cause().printStackTrace();
+                    }
+                });
     }
 }

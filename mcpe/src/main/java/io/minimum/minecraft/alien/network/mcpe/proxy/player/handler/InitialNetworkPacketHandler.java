@@ -1,5 +1,6 @@
 package io.minimum.minecraft.alien.network.mcpe.proxy.player.handler;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,8 +10,9 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.proc.JWSVerifierFactory;
 import io.minimum.minecraft.alien.network.mcpe.data.AuthData;
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
+import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
+import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
 import io.minimum.minecraft.alien.network.mcpe.util.EncryptionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
+import java.util.Map;
 
 public class InitialNetworkPacketHandler implements McpePacketHandler {
     private static final Gson GSON = new Gson();
@@ -48,6 +51,8 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     private final McpeConnection connection;
+    private AuthData authData;
+    private Map<String, Object> clientData;
 
     public InitialNetworkPacketHandler(McpeConnection connection) {
         this.connection = connection;
@@ -66,25 +71,25 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
             desiredData = validateAndObtainExtraData(packet);
         } catch (ChainUntrustedException e) {
             LOGGER.error("Unable to verify chain of trust for connection {}", connection.getRemoteAddress(), e);
-            connection.close("Internal server error");
+            connection.closeWith("Internal server error");
             return true;
         }
 
         if (desiredData == null) {
             LOGGER.error("No extraData found for {}", connection.getRemoteAddress());
-            connection.close("Internal server error");
+            connection.closeWith("Internal server error");
             return true;
         }
 
         // We have valid data and can now proceed to enabling encryption.
-        AuthData data = GSON.fromJson(desiredData, AuthData.class);
-        PublicKey playerKey;
         try {
-            playerKey = getKey(data.getIdentityPublicKey());
+            this.authData = GSON.fromJson(desiredData, AuthData.class);
+            this.clientData = JWSObject.parse(packet.getClientData()).getPayload().toJSONObject();
+            PublicKey playerKey = getKey(authData.getIdentityPublicKey());
             startEncryptionHandshake(playerKey);
         } catch (Exception e) {
             LOGGER.error("Can't enable encryption", e);
-            connection.close("Internal server error");
+            connection.closeWith("Internal server error");
         }
         return true;
     }
@@ -100,7 +105,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
                 connection.enableEncryption(serverKey);
             } else {
                 LOGGER.error("Can't enable encryption", future.cause());
-                connection.close("Internal server error");
+                connection.closeWith("Internal server error");
             }
         });
     }
@@ -112,8 +117,10 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     private void handleResourcePack() {
-        ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(connection);
-        connection.setPacketHandler(newHandler);
+        Preconditions.checkState(this.authData != null, "No auth yet");
+        ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(new McpePlayer(connection,
+                this.authData.getExtraData(), clientData));
+        connection.setSessionHandler(newHandler);
         newHandler.initialize();
     }
 
@@ -122,7 +129,7 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
     }
 
     private JsonArray obtainChain(McpeLogin packet) {
-        JsonObject object = GSON.fromJson(packet.getJwt().toString(), JsonObject.class);
+        JsonObject object = GSON.fromJson(packet.getChainData().toString(), JsonObject.class);
         return object.getAsJsonArray("chain");
     }
 

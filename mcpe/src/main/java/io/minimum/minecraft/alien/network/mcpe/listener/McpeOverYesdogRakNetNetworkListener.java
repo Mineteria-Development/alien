@@ -1,6 +1,7 @@
 package io.minimum.minecraft.alien.network.mcpe.listener;
 
 import io.minimum.minecraft.alien.network.NetworkListener;
+import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.codec.DatagramPacketAbsorber;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.codec.McpeCompressionCodec;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.codec.McpeConnectionCodec;
@@ -56,8 +57,8 @@ public class McpeOverYesdogRakNetNetworkListener implements NetworkListener {
                         ch.pipeline().addLast("alien-mcpe-codec", new McpeConnectionCodec(registry));
 
                         // Handle MCPE packets
-                        McpeConnection mc = new McpeConnection(ch, null);
-                        mc.setPacketHandler(new InitialNetworkPacketHandler(mc));
+                        McpeConnection mc = new McpeConnection(ch);
+                        mc.setSessionHandler(new InitialNetworkPacketHandler(mc));
                         ch.pipeline().addLast("alien-mcpe", mc);
                     }
                 }).bind(bound).syncUninterruptibly().channel();

@@ -1,6 +1,5 @@
 package io.minimum.minecraft.alien.network.mcpe.pipeline;
 
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.ProtocolVersions;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.codec.McpeConnectionCodec;
 import io.netty.channel.Channel;
@@ -15,7 +14,7 @@ public class PipelineUtils {
         ch.pipeline().addLast("alien-mcpe-codec", new McpeConnectionCodec(ProtocolVersions.PE_1_11));
 
         // Handle MCPE packets
-        McpeConnection mc = new McpeConnection(ch, null);
+        McpeConnection mc = new McpeConnection(ch);
         ch.pipeline().addLast("alien-mcpe", mc);
         return mc;
     }

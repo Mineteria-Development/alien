@@ -6,28 +6,38 @@ import io.netty.buffer.ByteBuf;
 
 public class McpeLogin implements McpePacket {
     private int protocolVersion;
-    private String jwt;
+    private String chainData;
+    private String clientData;
 
     public McpeLogin() {
     }
 
-    public McpeLogin(int protocolVersion, String jwt) {
+    public McpeLogin(int protocolVersion, String chainData) {
         this.protocolVersion = protocolVersion;
-        this.jwt = jwt;
+        this.chainData = chainData;
+        this.chainData = "";
+    }
+
+    public McpeLogin(int protocolVersion, String chainData, String clientData) {
+        this.protocolVersion = protocolVersion;
+        this.chainData = chainData;
+        this.clientData = clientData;
     }
 
     @Override
     public void decode(ByteBuf buffer) {
         this.protocolVersion = buffer.readInt();
-        Varints.decodeUnsigned(buffer); // length of the next string, with length included
-        this.jwt = McpeUtil.readLELengthString(buffer);
+        Varints.decodeUnsigned(buffer); // length of the next two strings, with length included
+        this.chainData = McpeUtil.readLELengthString(buffer);
+        this.clientData = McpeUtil.readLELengthString(buffer);
     }
 
     @Override
     public void encode(ByteBuf buffer) {
         buffer.writeInt(protocolVersion);
-        Varints.encodeSigned(buffer, this.jwt.length() + 4); // length of the next string, with length included
-        McpeUtil.writeLELengthString(buffer, this.jwt);
+        Varints.encodeUnsigned(buffer, this.chainData.length() + this.clientData.length() + 8); // length of the next string, with length included
+        McpeUtil.writeLELengthString(buffer, this.chainData);
+        McpeUtil.writeLELengthString(buffer, this.clientData);
     }
 
     @Override
@@ -39,15 +49,20 @@ public class McpeLogin implements McpePacket {
         return protocolVersion;
     }
 
-    public String getJwt() {
-        return jwt;
+    public String getChainData() {
+        return chainData;
+    }
+
+    public String getClientData() {
+        return clientData;
     }
 
     @Override
     public String toString() {
         return "McpeLogin{" +
                 "protocolVersion=" + protocolVersion +
-                ", jwt=" + jwt +
+                ", chainData='" + chainData + '\'' +
+                ", clientData='" + clientData + '\'' +
                 '}';
     }
 }
