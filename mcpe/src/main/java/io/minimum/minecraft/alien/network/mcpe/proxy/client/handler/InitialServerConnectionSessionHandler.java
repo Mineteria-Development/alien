@@ -1,6 +1,5 @@
 package io.minimum.minecraft.alien.network.mcpe.proxy.client.handler;
 
-import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.McpeServerConnection;
 import io.minimum.minecraft.alien.network.mcpe.proxy.player.handler.MitmWritingSessionHandler;
@@ -26,23 +25,13 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
     }
 
     @Override
-    public boolean handle(McpeResourcePacks packet) {
-        // pretend we have the resource pack
-        remoteServer.getConnection().write(new McpeResourcePackResponse(McpeResourcePackResponse.ACCEPTED));
-        remoteServer.getConnection().write(new McpeResourcePackResponse(McpeResourcePackResponse.HAVE_PACKS));
-        remoteServer.getConnection().write(new McpeResourcePackResponse(McpeResourcePackResponse.COMPLETED));
-
-        return true;
-    }
-
-    @Override
     public boolean handle(McpePlayStatus status) {
-        if (status.getStatus() == McpePlayStatus.PLAYER_SPAWN) {
+        if (status.getStatus() == McpePlayStatus.SUCCESS) {
             // Forward this packet to the player...
             player.getConnection().write(status);
 
             // And switch to the MITM state
-            remoteServer.getConnection().setSessionHandler(new MitmSessionHandler(player));
+            remoteServer.getConnection().setSessionHandler(new ServerPlaySessionHandler(player, remoteServer));
             player.getConnection().setSessionHandler(new MitmWritingSessionHandler(remoteServer));
         }
         return true;

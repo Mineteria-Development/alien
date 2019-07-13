@@ -60,10 +60,13 @@ public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf
                 out.add(packet);
             }
         } catch (Exception e) {
-            for (int i = 0; i < packetsFound + 1; i++) {
+            for (int i = 0; i < packetsFound; i++) {
                 decompressed.release();
             }
             throw e;
+        } finally {
+            // If there was at least one packet found, it would be retained.
+            decompressed.release();
         }
     }
 }

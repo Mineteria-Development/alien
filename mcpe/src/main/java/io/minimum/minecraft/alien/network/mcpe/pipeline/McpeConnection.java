@@ -62,9 +62,11 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            if (!(msg instanceof McpePacket) || !((McpePacket) msg).handle(sessionHandler)) {
-                sessionHandler.handleGeneric(sessionHandler);
+            if (msg instanceof McpePacket && ((McpePacket) msg).handle(sessionHandler)) {
+                return;
             }
+
+            sessionHandler.handleGeneric(msg);
         } finally {
             ReferenceCountUtil.release(msg);
         }
@@ -103,7 +105,7 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
     public void write(Object msg) {
         if (channel.isActive()) {
             logger.info("Writing {} to {}", msg, remoteAddress);
-            channel.write(msg, channel.voidPromise());
+            channel.writeAndFlush(msg, channel.voidPromise());
         }
     }
 
@@ -115,7 +117,7 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
     public void write(Object msg, ChannelFutureListener... listeners) {
         if (channel.isActive()) {
             logger.info("Writing {} to {}", msg, remoteAddress);
-            channel.write(msg).addListeners(listeners);
+            channel.writeAndFlush(msg).addListeners(listeners);
         }
     }
 
