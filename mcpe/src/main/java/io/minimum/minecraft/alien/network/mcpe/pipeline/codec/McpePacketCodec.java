@@ -46,7 +46,7 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
         } else {
             packet.decode(msg);
             if (msg.isReadable()) {
-                throw new CorruptedFrameException("Did not read all bytes for message " + msg.getClass().getName());
+                throw new CorruptedFrameException("Did not read all bytes for message " + packet.getClass().getName());
             }
             out.add(packet);
         }
