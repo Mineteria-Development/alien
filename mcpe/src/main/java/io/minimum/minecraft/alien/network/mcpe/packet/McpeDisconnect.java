@@ -36,6 +36,14 @@ public class McpeDisconnect implements McpePacket {
         return handler.handle(this);
     }
 
+    public boolean isHideDisconnectScreen() {
+        return hideDisconnectScreen;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public String toString() {
         return "McpeDisconnect{" +

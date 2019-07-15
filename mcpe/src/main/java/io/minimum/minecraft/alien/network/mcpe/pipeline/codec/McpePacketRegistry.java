@@ -22,13 +22,14 @@ public class McpePacketRegistry {
         this.packetIdsByClass.defaultReturnValue(Integer.MIN_VALUE);
     }
 
-    public <P extends McpePacket> McpePacketRegistry register(int id, Class<P> packetClass, Supplier<P> supplier) {
+    public <P extends McpePacket> McpePacketRegistry register(int id, Class<P> packetClass, @Nullable Supplier<P> supplier) {
         checkNotNull(packetClass, "packetClass");
-        checkNotNull(supplier, "supplier");
         checkArgument(!packetIdsByClass.containsKey(packetClass), "Packet class already registered");
         checkArgument(!packetSuppliersById.containsKey(id), "Packet ID already registered");
 
-        this.packetSuppliersById.put(id, supplier);
+        if (supplier != null) {
+            this.packetSuppliersById.put(id, supplier);
+        }
         this.packetIdsByClass.put(packetClass, id);
         return this;
     }

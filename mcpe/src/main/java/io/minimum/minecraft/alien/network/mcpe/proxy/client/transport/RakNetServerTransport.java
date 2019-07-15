@@ -15,6 +15,10 @@ import network.ycc.raknet.pipeline.UserDataCodec;
 
 import java.net.InetSocketAddress;
 
+/**
+ * Implements a server transport for RakNet-based servers, such as PMMP, NukkitX, MiNET, the vanilla dedicated server,
+ * and PSPE without the encapsulation protocol active.
+ */
 public class RakNetServerTransport implements ServerTransport {
     private final Bootstrap base;
 

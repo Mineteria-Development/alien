@@ -51,7 +51,11 @@ public interface McpePacketHandler {
         return false;
     }
 
-    default boolean handle(McpeResourcePackStack packStack) {
+    default boolean handle(McpeResourcePackStack packet) {
+        return false;
+    }
+
+    default boolean handle(McpeChat packet) {
         return false;
     }
 }

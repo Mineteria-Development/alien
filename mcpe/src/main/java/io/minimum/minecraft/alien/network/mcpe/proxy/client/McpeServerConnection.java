@@ -29,6 +29,8 @@ public class McpeServerConnection {
     }
 
     public Promise<Void> connect() {
+        Preconditions.checkState(connection == null, "Already connected to remote server");
+
         Promise<Void> result = player.getConnection().eventLoop().newPromise();
         transport.open(player.getConnection(), target.getDestination())
                 .addListener(future -> {
@@ -52,6 +54,25 @@ public class McpeServerConnection {
 
     @Nullable
     public McpeConnection getConnection() {
+        return connection;
+    }
+
+    /**
+     * Disconnects from the server.
+     */
+    public void disconnect() {
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
+    }
+
+    /**
+     * Ensures that the connection to the remote server is still active.
+     * @return the connection
+     */
+    public McpeConnection ensureConnection() {
+        Preconditions.checkState(connection != null, "Connection is not active");
         return connection;
     }
 

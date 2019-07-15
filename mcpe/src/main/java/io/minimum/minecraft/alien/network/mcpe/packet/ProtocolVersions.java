@@ -15,5 +15,6 @@ public class ProtocolVersions {
             .register(0x05, McpeDisconnect.class, McpeDisconnect::new)
             .register(0x06, McpeResourcePacks.class, McpeResourcePacks::new)
             .register(0x07, McpeResourcePackStack.class, McpeResourcePackStack::new)
-            .register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new);
+            .register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new)
+            .register(0x09, McpeChat.class, null);
 }

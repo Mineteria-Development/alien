@@ -2,10 +2,14 @@ package io.minimum.minecraft.alien.network.mcpe.proxy.client.handler;
 
 import io.minimum.minecraft.alien.network.mcpe.packet.*;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.McpeServerConnection;
-import io.minimum.minecraft.alien.network.mcpe.proxy.player.handler.MitmWritingSessionHandler;
+import io.minimum.minecraft.alien.network.mcpe.proxy.player.handler.PlaySessionHandler;
 import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class InitialServerConnectionSessionHandler implements McpePacketHandler {
+    private static final Logger LOGGER = LogManager.getLogger(InitialServerConnectionSessionHandler.class);
+
     private final McpeServerConnection remoteServer;
     private final McpePlayer player;
 
@@ -16,7 +20,27 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
 
     @Override
     public void exception(Throwable throwable) {
-        // TODO: Do something here
+        LOGGER.error("Unable to connect to {}", remoteServer.getTarget(), throwable);
+        handleDisconnect();
+    }
+
+    @Override
+    public void disconnected() {
+        LOGGER.error("Unable to connect to {} due to disconnect", remoteServer.getTarget());
+        handleDisconnect();
+    }
+
+    @Override
+    public boolean handle(McpeDisconnect packet) {
+        LOGGER.error("Unable to connect to {}: {}", remoteServer.getTarget(), packet.getMessage());
+        handleDisconnect();
+        return true;
+    }
+
+    private void handleDisconnect() {
+        // We were disconnected from the server. For now, kick the player.
+        player.getConnection().closeWith("Unable to connect to the server. Try again later.");
+        remoteServer.disconnect();
     }
 
     @Override
@@ -29,7 +53,10 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
         if (status.getStatus() == McpePlayStatus.SUCCESS) {
             // Switch to the MITM state
             remoteServer.getConnection().setSessionHandler(new ServerPlaySessionHandler(player, remoteServer));
-            player.getConnection().setSessionHandler(new MitmWritingSessionHandler(remoteServer));
+
+            player.setCurrentServer(remoteServer);
+
+            player.getConnection().setSessionHandler(new PlaySessionHandler(player));
         }
         return true;
     }
