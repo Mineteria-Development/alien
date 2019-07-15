@@ -12,8 +12,8 @@ import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
 import io.minimum.minecraft.alien.network.mcpe.util.EncryptionUtil;
 import io.minimum.minecraft.alien.network.util.TransportType;
 import io.netty.util.concurrent.Promise;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.URISyntaxException;
 
 public class McpeServerConnection {

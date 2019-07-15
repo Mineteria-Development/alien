@@ -1,6 +1,5 @@
 package io.minimum.minecraft.alien.network.mcpe.packet;
 
-import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
 
 public class McpePlayStatus implements McpePacket {

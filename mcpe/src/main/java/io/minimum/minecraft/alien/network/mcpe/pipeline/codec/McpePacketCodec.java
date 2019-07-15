@@ -4,6 +4,7 @@ import io.minimum.minecraft.alien.network.mcpe.packet.McpePacket;
 import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.MessageToMessageCodec;
 
 import java.util.List;
@@ -44,6 +45,9 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
             out.add(msg.retain());
         } else {
             packet.decode(msg);
+            if (msg.isReadable()) {
+                throw new CorruptedFrameException("Did not read all bytes for message " + msg.getClass().getName());
+            }
             out.add(packet);
         }
     }
