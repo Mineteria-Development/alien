@@ -43,7 +43,12 @@ public class ServerPlaySessionHandler implements McpePacketHandler {
     @Override
     public void handleGeneric(Object message) {
         if (message instanceof ByteBuf) {
-            LOGGER.debug("[IN] " + ByteBufUtil.prettyHexDump((ByteBuf) message));
+            ByteBuf b = (ByteBuf) message;
+            if (b.readableBytes() > 64) {
+                // Just want the first 64 bytes
+                b = b.slice(0, 64);
+            }
+            LOGGER.debug("[IN-First 64] " + ByteBufUtil.prettyHexDump(b));
         }
         player.getConnection().write(ReferenceCountUtil.retain(message));
     }

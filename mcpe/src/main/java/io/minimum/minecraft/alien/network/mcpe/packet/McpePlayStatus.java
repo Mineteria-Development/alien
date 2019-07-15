@@ -26,12 +26,12 @@ public class McpePlayStatus implements McpePacket {
 
     @Override
     public void decode(ByteBuf buf) {
-        this.status = (int) Varints.decodeUnsigned(buf);
+        this.status = buf.readInt();
     }
 
     @Override
     public void encode(ByteBuf buf) {
-        Varints.encodeSigned(buf, this.status);
+        buf.writeInt(status);
     }
 
     @Override
