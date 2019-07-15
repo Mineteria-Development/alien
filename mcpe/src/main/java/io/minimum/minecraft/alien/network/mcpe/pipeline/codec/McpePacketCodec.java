@@ -8,10 +8,10 @@ import io.netty.handler.codec.MessageToMessageCodec;
 
 import java.util.List;
 
-public class McpeConnectionCodec extends MessageToMessageCodec<ByteBuf, McpePacket> {
+public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> {
     private final McpePacketRegistry registry;
 
-    public McpeConnectionCodec(McpePacketRegistry registry) {
+    public McpePacketCodec(McpePacketRegistry registry) {
         this.registry = registry;
     }
 

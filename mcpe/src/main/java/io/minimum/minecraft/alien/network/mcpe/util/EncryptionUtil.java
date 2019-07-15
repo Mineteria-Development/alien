@@ -2,7 +2,6 @@ package io.minimum.minecraft.alien.network.mcpe.util;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.ECDSASigner;
@@ -23,6 +22,7 @@ import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 
 public class EncryptionUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -88,8 +88,22 @@ public class EncryptionUtil {
         return new McpeServerToClientEncryptionHandshake(object.serialize());
     }
 
-    private static JSONObject fromObjectToMinidevJson(Object o) {
-        return JSONValue.parse(GSON.toJson(o), new JSONObject());
+    /**
+     * This function rewrites the extra data so that the login process can proceed normally.
+     * @param o the extra data object
+     * @return
+     */
+    private static JSONObject transformProfile(AuthProfile o) {
+        JSONObject object = JSONValue.parse(GSON.toJson(o), new JSONObject());
+
+        // Since we are forging the server profile, move the XUID to a different field
+        object.put("__CapturedXUID", object.get("XUID"));
+        object.remove("XUID");
+
+        // NukkitX expects the ServerAddress to point to the server address
+
+
+        return object;
     }
 
     public static McpeLogin createFakeChain(McpePlayer player) throws JOSEException, URISyntaxException {
@@ -99,7 +113,7 @@ public class EncryptionUtil {
                         .build(),
                 new JWTClaimsSet.Builder()
                         .claim("certificateAuthority", true)
-                        .claim("extraData", fromObjectToMinidevJson(player.getProfile()))
+                        .claim("extraData", transformProfile(player.getProfile()))
                         .claim("identityPublicKey", Base64.getEncoder().encodeToString(SERVER_KEY_PAIR.getPublic().getEncoded()))
                         .issueTime(new Date())
                         .expirationTime(new Date(System.currentTimeMillis() + 30000))

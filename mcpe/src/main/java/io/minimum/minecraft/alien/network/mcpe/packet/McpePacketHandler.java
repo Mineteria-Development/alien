@@ -24,30 +24,34 @@ public interface McpePacketHandler {
     }
 
     default boolean handle(McpeLogin packet) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpeDisconnect packet) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpeServerToClientEncryptionHandshake packet) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpeClientToServerEncryptionHandshake packet) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpePlayStatus status) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpeResourcePacks packet) {
-        return true;
+        return false;
     }
 
     default boolean handle(McpeResourcePackResponse packet) {
-        return true;
+        return false;
+    }
+
+    default boolean handle(McpeResourcePackStack packStack) {
+        return false;
     }
 }

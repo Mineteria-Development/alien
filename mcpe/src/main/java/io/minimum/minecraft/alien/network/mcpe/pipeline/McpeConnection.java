@@ -105,7 +105,7 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
     public void write(Object msg) {
         if (channel.isActive()) {
             logger.info("Writing {} to {}", msg, remoteAddress);
-            channel.writeAndFlush(msg, channel.voidPromise());
+            channel.write(msg, channel.voidPromise());
         }
     }
 
@@ -117,7 +117,7 @@ public class McpeConnection extends ChannelInboundHandlerAdapter {
     public void write(Object msg, ChannelFutureListener... listeners) {
         if (channel.isActive()) {
             logger.info("Writing {} to {}", msg, remoteAddress);
-            channel.writeAndFlush(msg).addListeners(listeners);
+            channel.write(msg).addListeners(listeners);
         }
     }
 

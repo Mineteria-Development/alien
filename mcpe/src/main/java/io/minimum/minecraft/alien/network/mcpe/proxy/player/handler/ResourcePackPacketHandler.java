@@ -14,7 +14,8 @@ class ResourcePackPacketHandler implements McpePacketHandler {
         this.player = player;
     }
 
-    void initialize() {
+    @Override
+    public void activated() {
         player.getConnection().write(new McpePlayStatus(McpePlayStatus.SUCCESS));
         player.getConnection().write(new McpeResourcePacks());
     }

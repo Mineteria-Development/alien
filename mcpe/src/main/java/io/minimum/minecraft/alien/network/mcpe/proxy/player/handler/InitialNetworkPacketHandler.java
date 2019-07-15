@@ -121,7 +121,6 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
         ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(new McpePlayer(connection,
                 this.authData.getExtraData(), clientData));
         connection.setSessionHandler(newHandler);
-        newHandler.initialize();
     }
 
     private boolean verify(Key key, JWSObject object) throws JOSEException {

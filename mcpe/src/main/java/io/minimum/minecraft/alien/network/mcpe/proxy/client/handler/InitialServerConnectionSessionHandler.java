@@ -27,10 +27,7 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
     @Override
     public boolean handle(McpePlayStatus status) {
         if (status.getStatus() == McpePlayStatus.SUCCESS) {
-            // Forward this packet to the player...
-            player.getConnection().write(status);
-
-            // And switch to the MITM state
+            // Switch to the MITM state
             remoteServer.getConnection().setSessionHandler(new ServerPlaySessionHandler(player, remoteServer));
             player.getConnection().setSessionHandler(new MitmWritingSessionHandler(remoteServer));
         }
