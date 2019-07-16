@@ -88,7 +88,6 @@ public class McpeCompressionCodec extends ChannelDuplexHandler {
         if (msg instanceof ByteBuf) {
             ByteBuf buf = (ByteBuf) msg;
             ByteBuf decompressed = ctx.alloc().directBuffer();
-            int packetsFound = 0;
             try {
                 compressor.inflate(buf, decompressed, COMPRESSED_PACKET_LIMIT);
 
@@ -96,11 +95,10 @@ public class McpeCompressionCodec extends ChannelDuplexHandler {
                 while (decompressed.isReadable()) {
                     int length = (int) Varints.decodeUnsigned(decompressed);
                     ByteBuf packet = decompressed.readRetainedSlice(length);
-                    packetsFound++;
                     ctx.fireChannelRead(packet);
                 }
             } catch (Exception e) {
-                for (int i = 0; i < packetsFound; i++) {
+                for (int i = 0; i < decompressed.refCnt() - 1; i++) {
                     decompressed.release();
                 }
                 throw e;
