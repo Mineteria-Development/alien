@@ -20,19 +20,16 @@ public class InitialServerConnectionSessionHandler implements McpePacketHandler 
 
     @Override
     public void exception(Throwable throwable) {
-        LOGGER.error("Unable to connect to {}", remoteServer.getTarget(), throwable);
         handleDisconnect();
     }
 
     @Override
     public void disconnected() {
-        LOGGER.error("Unable to connect to {} due to disconnect", remoteServer.getTarget());
         handleDisconnect();
     }
 
     @Override
     public boolean handle(McpeDisconnect packet) {
-        LOGGER.error("Unable to connect to {}: {}", remoteServer.getTarget(), packet.getMessage());
         handleDisconnect();
         return true;
     }

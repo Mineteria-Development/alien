@@ -5,7 +5,8 @@ import com.nimbusds.jose.JOSEException;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.packet.McpeLogin;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.handler.InitialServerConnectionSessionHandler;
-import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.RakNetServerTransport;
+import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.pspe.PSPEEncapsulatedServerTransport;
+import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.raknet.RakNetServerTransport;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.ServerTransport;
 import io.minimum.minecraft.alien.network.mcpe.proxy.data.ServerInfo;
 import io.minimum.minecraft.alien.network.mcpe.proxy.player.McpePlayer;
@@ -25,7 +26,7 @@ public class McpeServerConnection {
     public McpeServerConnection(ServerInfo target, McpePlayer player) {
         this.target = target;
         this.player = player;
-        this.transport = new RakNetServerTransport(TransportType.bestType());
+        this.transport = new PSPEEncapsulatedServerTransport(TransportType.bestType());
     }
 
     public Promise<Void> connect() {

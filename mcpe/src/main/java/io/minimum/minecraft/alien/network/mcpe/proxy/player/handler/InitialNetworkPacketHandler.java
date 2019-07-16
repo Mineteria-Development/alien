@@ -118,8 +118,9 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
 
     private void handleResourcePack() {
         Preconditions.checkState(this.authData != null, "No auth yet");
-        ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(new McpePlayer(connection,
-                this.authData.getExtraData(), clientData));
+        McpePlayer player = new McpePlayer(connection, this.authData.getExtraData(), clientData);
+        ResourcePackPacketHandler newHandler = new ResourcePackPacketHandler(player);
+        connection.setAssociation(player);
         connection.setSessionHandler(newHandler);
     }
 

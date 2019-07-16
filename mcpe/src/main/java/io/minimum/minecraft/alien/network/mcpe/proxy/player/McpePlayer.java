@@ -3,12 +3,13 @@ package io.minimum.minecraft.alien.network.mcpe.proxy.player;
 import com.google.common.collect.ImmutableMap;
 import io.minimum.minecraft.alien.network.mcpe.data.AuthProfile;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
+import io.minimum.minecraft.alien.network.mcpe.pipeline.MinecraftConnectionAssociation;
 import io.minimum.minecraft.alien.network.mcpe.proxy.client.McpeServerConnection;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 
-public class McpePlayer {
+public class McpePlayer implements MinecraftConnectionAssociation {
     private final McpeConnection connection;
     private final AuthProfile profile;
     private final Map<String, Object> clientData;

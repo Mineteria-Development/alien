@@ -1,8 +1,9 @@
-package io.minimum.minecraft.alien.network.mcpe.proxy.client.transport;
+package io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.raknet;
 
 import io.minimum.minecraft.alien.network.mcpe.pipeline.McpeConnection;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.PipelineUtils;
 import io.minimum.minecraft.alien.network.mcpe.pipeline.codec.McpeCompressionCodec;
+import io.minimum.minecraft.alien.network.mcpe.proxy.client.transport.ServerTransport;
 import io.minimum.minecraft.alien.network.util.TransportType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

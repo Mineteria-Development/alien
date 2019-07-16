@@ -23,7 +23,7 @@ public class ServerStatusHandler extends UdpPacketHandler<UnconnectedPing> {
         pong.setClientTime(packet.getClientTime());
         pong.setMagic(DefaultConfig.DEFAULT_MAGIC);
         pong.setServerId(0xdeadf001L);
-        pong.setInfo("MCPE;Alien server;105;1.0.5;0;9000");
+        pong.setInfo("MCPE;Alien server;358;1.11.0;0;9000");
         respond(ctx, sender, pong);
     }
 

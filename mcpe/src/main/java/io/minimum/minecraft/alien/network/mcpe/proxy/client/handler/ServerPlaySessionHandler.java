@@ -24,7 +24,23 @@ public class ServerPlaySessionHandler implements McpePacketHandler {
 
     @Override
     public void exception(Throwable throwable) {
+        handleDisconnect();
+    }
 
+    @Override
+    public void disconnected() {
+        handleDisconnect();
+    }
+
+    @Override
+    public boolean handle(McpeDisconnect packet) {
+        handleDisconnect();
+        return true;
+    }
+
+    private void handleDisconnect() {
+        // We were disconnected from the server. For now, kick the player.
+        player.getConnection().closeWith("An error occurred in your connection, check your console logs.");
     }
 
     @Override
