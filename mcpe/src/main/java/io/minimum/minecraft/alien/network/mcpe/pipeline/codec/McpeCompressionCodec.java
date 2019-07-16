@@ -51,6 +51,8 @@ public class McpeCompressionCodec extends ChannelDuplexHandler {
 
                 FlushTickHandler.checkFlushTick(ctx.channel());
                 promise.setSuccess();
+            } catch (Exception e) {
+                promise.setFailure(e);
             } finally {
                 buf.release();
             }
