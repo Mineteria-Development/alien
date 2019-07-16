@@ -87,24 +87,27 @@ public class McpeCompressionCodec extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
             ByteBuf buf = (ByteBuf) msg;
-            ByteBuf decompressed = ctx.alloc().directBuffer();
             try {
-                compressor.inflate(buf, decompressed, COMPRESSED_PACKET_LIMIT);
+                ByteBuf decompressed = ctx.alloc().directBuffer();
+                try {
+                    compressor.inflate(buf, decompressed, COMPRESSED_PACKET_LIMIT);
 
-                // Now frame the packets
-                while (decompressed.isReadable()) {
-                    int length = (int) Varints.decodeUnsigned(decompressed);
-                    ByteBuf packet = decompressed.readRetainedSlice(length);
-                    ctx.fireChannelRead(packet);
-                }
-            } catch (Exception e) {
-                for (int i = 0; i < decompressed.refCnt() - 1; i++) {
+                    // Now frame the packets
+                    while (decompressed.isReadable()) {
+                        int length = (int) Varints.decodeUnsigned(decompressed);
+                        ByteBuf packet = decompressed.readRetainedSlice(length);
+                        ctx.fireChannelRead(packet);
+                    }
+                } catch (Exception e) {
+                    for (int i = 0; i < decompressed.refCnt() - 1; i++) {
+                        decompressed.release();
+                    }
+                    throw e;
+                } finally {
+                    // If there was at least one packet found, it would be retained.
                     decompressed.release();
                 }
-                throw e;
             } finally {
-                // If there was at least one packet found, it would be retained.
-                decompressed.release();
                 buf.release();
             }
         } else {
