@@ -4,69 +4,113 @@ import io.minimum.minecraft.alien.natives.compression.VelocityCompressor;
 import io.minimum.minecraft.alien.natives.util.Natives;
 import io.minimum.minecraft.alien.network.mcpe.util.Varints;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageCodec;
+import io.netty.channel.ChannelPromise;
+import network.ycc.raknet.pipeline.FlushTickHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.List;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 
-public class McpeCompressionCodec extends MessageToMessageCodec<ByteBuf, ByteBuf> {
-    private static final int MAX_COMPRESSED_SIZE = 2 * 1024 * 1024;
+public class McpeCompressionCodec extends ChannelDuplexHandler {
+    private static final Logger LOGGER = LogManager.getLogger(McpeCompressionCodec.class);
+
+    private static final int COMPRESSED_PACKET_LIMIT = 2 * 1024 * 1024;
+    private static final int PACKET_LIMIT = 10;
 
     private VelocityCompressor compressor;
+    private ByteBuf holdingBuffer;
+    private int queuedPackets = 0;
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         this.compressor = Natives.compress.get().create(Deflater.DEFAULT_COMPRESSION);
+        this.holdingBuffer = ctx.alloc().directBuffer();
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         this.compressor.dispose();
+        this.holdingBuffer.release();
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        // TODO: This should probably queue the packets until a flush, and only then compress. This would improve the
-        //       effectiveness of compression and reduce CPU time spent compressing.
-        ByteBuf composed = ctx.alloc().directBuffer();
-        ByteBuf compressed = ctx.alloc().directBuffer();
-        try {
-            Varints.encodeUnsigned(composed, msg.readableBytes());
-            composed.writeBytes(msg);
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        if (msg instanceof ByteBuf) {
+            ByteBuf buf = (ByteBuf) msg;
+            try {
+                Varints.encodeUnsigned(holdingBuffer, buf.readableBytes());
+                holdingBuffer.writeBytes(buf);
+                queuedPackets++;
 
-            compressor.deflate(composed, compressed);
-            out.add(compressed);
-        } catch (Exception e) {
-            compressed.release();
-            throw e;
-        } finally {
-            composed.release();
+                if (queuedPackets >= PACKET_LIMIT) {
+                    flushAllData(ctx);
+                }
+
+                FlushTickHandler.checkFlushTick(ctx.channel());
+                promise.setSuccess();
+            } finally {
+                buf.release();
+            }
+        } else {
+            super.write(ctx, msg, promise);
         }
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        ByteBuf decompressed = ctx.alloc().directBuffer();
-        int packetsFound = 0;
-        try {
-            compressor.inflate(msg, decompressed, MAX_COMPRESSED_SIZE);
+    public void flush(ChannelHandlerContext ctx) throws Exception {
+        if (holdingBuffer.isReadable()) {
+            flushAllData(ctx);
+        }
+        super.flush(ctx);
+    }
 
-            // Now frame the packets
-            while (decompressed.isReadable()) {
-                int length = (int) Varints.decodeUnsigned(decompressed);
-                ByteBuf packet = decompressed.readRetainedSlice(length);
-                packetsFound++;
-                out.add(packet);
-            }
+    private void flushAllData(ChannelHandlerContext ctx) throws DataFormatException {
+        ByteBuf compressed = ctx.alloc().directBuffer();
+        try {
+            compressor.deflate(holdingBuffer, compressed);
+            LOGGER.debug("Flushed {} packets ({} => {} bytes)", queuedPackets, holdingBuffer.writerIndex(),
+                    compressed.writerIndex());
+
+            ctx.write(compressed, ctx.voidPromise());
+            holdingBuffer.clear();
+            queuedPackets = 0;
         } catch (Exception e) {
-            for (int i = 0; i < packetsFound; i++) {
-                decompressed.release();
-            }
+            compressed.release();
             throw e;
-        } finally {
-            // If there was at least one packet found, it would be retained.
-            decompressed.release();
+        }
+    }
+
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof ByteBuf) {
+            ByteBuf buf = (ByteBuf) msg;
+            ByteBuf decompressed = ctx.alloc().directBuffer();
+            int packetsFound = 0;
+            try {
+                compressor.inflate(buf, decompressed, COMPRESSED_PACKET_LIMIT);
+
+                // Now frame the packets
+                while (decompressed.isReadable()) {
+                    int length = (int) Varints.decodeUnsigned(decompressed);
+                    ByteBuf packet = decompressed.readRetainedSlice(length);
+                    packetsFound++;
+                    ctx.fireChannelRead(packet);
+                }
+            } catch (Exception e) {
+                for (int i = 0; i < packetsFound; i++) {
+                    decompressed.release();
+                }
+                throw e;
+            } finally {
+                // If there was at least one packet found, it would be retained.
+                decompressed.release();
+                buf.release();
+            }
+        } else {
+            super.channelRead(ctx, msg);
         }
     }
 }
