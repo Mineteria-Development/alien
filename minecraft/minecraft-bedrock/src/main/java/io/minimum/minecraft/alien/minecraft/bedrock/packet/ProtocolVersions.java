@@ -33,7 +33,8 @@ public class ProtocolVersions {
                 .register(0x06, McpeResourcePacks.class, McpeResourcePacks::new)
                 .register(0x07, McpeResourcePackStack.class, McpeResourcePackStack::new)
                 .register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new)
-                .register(0x09, McpeChat.class, McpeChat::new));
+                .register(0x09, McpeChat.class, McpeChat::new)
+                .register(0x0b, McpeStartGame.class, McpeStartGame::new));
 
         registries.put(PE_1_12, new McpePacketRegistry(PE_1_12)
                 .register(0x01, McpeLogin.class, McpeLogin::new)
@@ -44,7 +45,8 @@ public class ProtocolVersions {
                 .register(0x06, McpeResourcePacks.class, McpeResourcePacks::new)
                 .register(0x07, McpeResourcePackStack.class, McpeResourcePackStack::new)
                 .register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new)
-                .register(0x09, McpeChat.class, McpeChat::new));
+                .register(0x09, McpeChat.class, McpeChat::new)
+                .register(0x0b, McpeStartGame.class, McpeStartGame::new));
 
         VERSION_REGISTRIES = Int2ObjectMaps.unmodifiable(registries);
     }

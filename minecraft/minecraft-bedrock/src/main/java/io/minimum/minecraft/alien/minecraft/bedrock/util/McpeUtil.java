@@ -45,14 +45,6 @@ public class McpeUtil {
         return data;
     }
 
-    public static void writeFloatLE(ByteBuf buf, float value) {
-        buf.writeIntLE(Float.floatToRawIntBits(value));
-    }
-
-    public static float readFloatLE(ByteBuf buf) {
-        return Float.intBitsToFloat(buf.readIntLE());
-    }
-
     public static UUID readUuid(ByteBuf buf) {
         return new UUID(buf.readLong(), buf.readLong());
     }

@@ -60,4 +60,8 @@ public interface McpePacketHandler {
     default boolean handle(McpeChat packet) {
         return false;
     }
+
+    default boolean handle(McpeStartGame packet) {
+        return false;
+    }
 }
