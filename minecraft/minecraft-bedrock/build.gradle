@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile project(':alien-natives')
+    compile project(':minecraft:minecraft-shared')
+    
+    compile 'network.ycc:netty-raknet-client:0.7-SNAPSHOT'
+    compile 'network.ycc:netty-raknet-server:0.7-SNAPSHOT'
+    compile 'com.nimbusds:nimbus-jose-jwt:7.4'
+}

@@ -1,6 +1,6 @@
 package io.minimum.minecraft.alien;
 
-import io.minimum.minecraft.alien.network.mcpe.listener.McpeOverYesdogRakNetNetworkListener;
+import io.minimum.minecraft.alien.minecraft.bedrock.listener.BedrockProxyNetworkListener;
 import io.minimum.minecraft.alien.network.util.TransportType;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
@@ -33,7 +33,7 @@ public class Alien {
         EventLoopGroup boss = type.createEventLoopGroup(TransportType.Type.BOSS);
         EventLoopGroup worker = type.createEventLoopGroup(TransportType.Type.WORKER);
 
-        new McpeOverYesdogRakNetNetworkListener(new InetSocketAddress("127.0.0.1", 19132)).bind(type, boss, worker);
+        new BedrockProxyNetworkListener(new InetSocketAddress("127.0.0.1", 19132)).bind(type, boss, worker);
 
         while (true) {
             Thread.sleep(1000);
