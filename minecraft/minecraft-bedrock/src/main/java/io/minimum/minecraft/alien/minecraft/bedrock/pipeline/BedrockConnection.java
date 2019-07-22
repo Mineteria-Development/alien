@@ -1,10 +1,13 @@
 package io.minimum.minecraft.alien.minecraft.bedrock.pipeline;
 
 import com.google.common.base.Preconditions;
+import io.minimum.minecraft.alien.minecraft.bedrock.packet.ProtocolVersions;
 import io.minimum.minecraft.alien.minecraft.bedrock.pipeline.codec.McpeEncryptionCodec;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpeDisconnect;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpePacket;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpePacketHandler;
+import io.minimum.minecraft.alien.minecraft.bedrock.pipeline.codec.McpePacketCodec;
+import io.minimum.minecraft.alien.minecraft.bedrock.pipeline.codec.McpePacketRegistry;
 import io.minimum.minecraft.alien.shared.network.MinecraftConnectionAssociation;
 import io.netty.channel.*;
 import io.netty.handler.timeout.ReadTimeoutException;
@@ -23,16 +26,17 @@ public class BedrockConnection extends ChannelInboundHandlerAdapter {
     private SocketAddress remoteAddress;
     private @Nullable McpePacketHandler sessionHandler;
     private @Nullable MinecraftConnectionAssociation association;
-    private int protocolVersion;
+    private McpePacketRegistry packetRegistry;
     private boolean knownDisconnect = false;
 
     /**
      * Initializes a new {@link BedrockConnection} instance.
      * @param channel the channel on the connection
      */
-    public BedrockConnection(Channel channel) {
+    public BedrockConnection(Channel channel, McpePacketRegistry packetRegistry) {
         this.channel = channel;
         this.remoteAddress = channel.remoteAddress();
+        this.packetRegistry = packetRegistry;
     }
 
     @Override
@@ -155,25 +159,26 @@ public class BedrockConnection extends ChannelInboundHandlerAdapter {
     }
 
     public int getProtocolVersion() {
-        return protocolVersion;
+        return packetRegistry.getProtocolVersion();
     }
 
-    /*
+    public McpePacketRegistry getPacketRegistry() {
+        return packetRegistry;
+    }
+
     /**
      * Sets the new protocol version for the connection.
      * @param protocolVersion the protocol version to use
      */
-    /*
     public void setProtocolVersion(int protocolVersion) {
-        ProtocolRegistry registry = BetaPackets.VERSIONS.getProtocolRegistry(protocolVersion);
+        McpePacketRegistry registry = ProtocolVersions.getRegistry(protocolVersion);
         if (registry == null) {
             throw new IllegalArgumentException("Unknown protocol version " + protocolVersion);
         }
 
-        this.protocolVersion = protocolVersion;
-        this.channel.pipeline().get(MinecraftBetaDecoder.class).setRegistry(registry);
-        this.channel.pipeline().get(MinecraftBetaEncoder.class).setRegistry(registry);
-    }*/
+        this.packetRegistry = registry;
+        this.channel.pipeline().get(McpePacketCodec.class).setRegistry(registry);
+    }
 
     public @Nullable McpePacketHandler getSessionHandler() {
         return sessionHandler;

@@ -11,13 +11,20 @@ public class ProtocolVersions {
         throw new AssertionError();
     }
 
+    public static final int GENERIC_VERSION = -1;
     public static final int PE_1_11 = 354;
     public static final int PE_1_12 = 361;
     private static final Int2ObjectMap<McpePacketRegistry> VERSION_REGISTRIES;
 
     static {
         Int2ObjectMap<McpePacketRegistry> registries = new Int2ObjectOpenHashMap<>();
-        registries.put(PE_1_11, new McpePacketRegistry()
+
+        // A special-purpose version with the bare minimum of packets needed to indicate success or an old client
+        registries.put(GENERIC_VERSION, new McpePacketRegistry(GENERIC_VERSION)
+                .register(0x01, McpeLogin.class, McpeLogin::new)
+                .register(0x05, McpeDisconnect.class, McpeDisconnect::new));
+
+        registries.put(PE_1_11, new McpePacketRegistry(PE_1_11)
                 .register(0x01, McpeLogin.class, McpeLogin::new)
                 .register(0x02, McpePlayStatus.class, McpePlayStatus::new)
                 .register(0x03, McpeServerToClientEncryptionHandshake.class, McpeServerToClientEncryptionHandshake::new)
@@ -28,7 +35,7 @@ public class ProtocolVersions {
                 .register(0x08, McpeResourcePackResponse.class, McpeResourcePackResponse::new)
                 .register(0x09, McpeChat.class, McpeChat::new));
 
-        registries.put(PE_1_12, new McpePacketRegistry()
+        registries.put(PE_1_12, new McpePacketRegistry(PE_1_12)
                 .register(0x01, McpeLogin.class, McpeLogin::new)
                 .register(0x02, McpePlayStatus.class, McpePlayStatus::new)
                 .register(0x03, McpeServerToClientEncryptionHandshake.class, McpeServerToClientEncryptionHandshake::new)
@@ -44,5 +51,9 @@ public class ProtocolVersions {
 
     public static @Nullable McpePacketRegistry getRegistry(int protocolVersion) {
         return VERSION_REGISTRIES.get(protocolVersion);
+    }
+
+    public static McpePacketRegistry generic() {
+        return VERSION_REGISTRIES.get(GENERIC_VERSION);
     }
 }

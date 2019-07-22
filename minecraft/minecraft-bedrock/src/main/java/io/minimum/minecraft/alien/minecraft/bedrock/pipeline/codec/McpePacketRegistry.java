@@ -15,8 +15,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class McpePacketRegistry {
     private final Int2ObjectMap<Supplier<? extends McpePacket>> packetSuppliersById;
     private final Object2IntMap<Class<? extends McpePacket>> packetIdsByClass;
+    private final int protocolVersion;
 
-    public McpePacketRegistry() {
+    public McpePacketRegistry(int protocolVersion) {
+        this.protocolVersion = protocolVersion;
         this.packetSuppliersById = new Int2ObjectOpenHashMap<>();
         this.packetIdsByClass = new Object2IntOpenHashMap<>();
         this.packetIdsByClass.defaultReturnValue(Integer.MIN_VALUE);
@@ -44,5 +46,9 @@ public class McpePacketRegistry {
             return null;
         }
         return supplier.get();
+    }
+
+    public int getProtocolVersion() {
+        return protocolVersion;
     }
 }

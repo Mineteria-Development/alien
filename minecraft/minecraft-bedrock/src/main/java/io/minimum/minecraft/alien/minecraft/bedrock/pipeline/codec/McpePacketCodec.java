@@ -11,7 +11,7 @@ import io.netty.handler.codec.MessageToMessageCodec;
 import java.util.List;
 
 public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> {
-    private final McpePacketRegistry registry;
+    private McpePacketRegistry registry;
 
     public McpePacketCodec(McpePacketRegistry registry) {
         this.registry = registry;
@@ -27,7 +27,7 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
         ByteBuf buf = ctx.alloc().directBuffer();
         try {
             Varints.encodeUnsigned(buf, id);
-            msg.encode(buf, ProtocolVersions.PE_1_11);
+            msg.encode(buf, registry.getProtocolVersion());
             out.add(buf);
         } catch (Exception e) {
             buf.release();
@@ -45,11 +45,15 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
             msg.readerIndex(ri);
             out.add(msg.retain());
         } else {
-            packet.decode(msg, ProtocolVersions.PE_1_11);
+            packet.decode(msg, registry.getProtocolVersion());
             if (msg.isReadable()) {
                 throw new CorruptedFrameException("Did not read all bytes for message " + packet.getClass().getName());
             }
             out.add(packet);
         }
+    }
+
+    public void setRegistry(McpePacketRegistry registry) {
+        this.registry = registry;
     }
 }

@@ -28,7 +28,7 @@ public class BedrockProxyNetworkListener implements NetworkListener {
 
     @Override
     public boolean bind(TransportType type, EventLoopGroup boss, EventLoopGroup worker) {
-        final McpePacketRegistry registry = ProtocolVersions.getRegistry(ProtocolVersions.PE_1_11); // TODO: Let's do better than this
+        final McpePacketRegistry registry = ProtocolVersions.generic();
 
         this.channel = new ServerBootstrap()
                 .group(boss, worker) // NB: this is fairly useless if we do SO_REUSEPORT
@@ -57,7 +57,7 @@ public class BedrockProxyNetworkListener implements NetworkListener {
                         ch.pipeline().addLast("alien-mcpe-codec", new McpePacketCodec(registry));
 
                         // Handle MCPE packets
-                        BedrockConnection mc = new BedrockConnection(ch);
+                        BedrockConnection mc = new BedrockConnection(ch, registry);
                         mc.setSessionHandler(new InitialNetworkPacketHandler(mc));
                         ch.pipeline().addLast("alien-mcpe", mc);
                     }

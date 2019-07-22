@@ -13,6 +13,7 @@ import io.minimum.minecraft.alien.minecraft.bedrock.data.AuthData;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpeClientToServerEncryptionHandshake;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpeLogin;
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpePacketHandler;
+import io.minimum.minecraft.alien.minecraft.bedrock.packet.ProtocolVersions;
 import io.minimum.minecraft.alien.minecraft.bedrock.pipeline.BedrockConnection;
 import io.minimum.minecraft.alien.minecraft.bedrock.proxy.player.McpePlayer;
 import io.minimum.minecraft.alien.minecraft.bedrock.util.EncryptionUtil;
@@ -67,6 +68,12 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
 
     @Override
     public boolean handle(McpeLogin packet) {
+        if (ProtocolVersions.getRegistry(packet.getProtocolVersion()) == null) {
+            // Reject the login. We don't support the protocol version the client seems to have.
+            connection.closeWith("Your version of Minecraft is too old.");
+            return true;
+        }
+
         // Verify the JWT chain of trust.
         JsonObject desiredData;
         try {
@@ -85,6 +92,8 @@ public class InitialNetworkPacketHandler implements McpePacketHandler {
 
         // We have valid data and can now proceed to enabling encryption.
         try {
+            this.connection.setProtocolVersion(packet.getProtocolVersion());
+
             this.authData = GSON.fromJson(desiredData, AuthData.class);
             this.clientData = JWSObject.parse(packet.getClientData()).getPayload().toJSONObject();
             PublicKey playerKey = getKey(authData.getIdentityPublicKey());
