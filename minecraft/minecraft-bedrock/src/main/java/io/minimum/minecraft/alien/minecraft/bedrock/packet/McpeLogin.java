@@ -12,12 +12,6 @@ public class McpeLogin implements McpePacket {
     public McpeLogin() {
     }
 
-    public McpeLogin(int protocolVersion, String chainData) {
-        this.protocolVersion = protocolVersion;
-        this.chainData = chainData;
-        this.chainData = "";
-    }
-
     public McpeLogin(int protocolVersion, String chainData, String clientData) {
         this.protocolVersion = protocolVersion;
         this.chainData = chainData;
