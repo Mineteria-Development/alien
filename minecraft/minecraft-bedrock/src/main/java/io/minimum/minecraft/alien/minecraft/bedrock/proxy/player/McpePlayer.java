@@ -40,4 +40,9 @@ public class McpePlayer implements MinecraftConnectionAssociation {
     public void setCurrentServer(McpeServerConnection currentServer) {
         this.currentServer = currentServer;
     }
+
+    @Override
+    public String toString() {
+        return "Player [" + profile.getDisplayName() + "] (" + connection.getRemoteAddress() + ")";
+    }
 }

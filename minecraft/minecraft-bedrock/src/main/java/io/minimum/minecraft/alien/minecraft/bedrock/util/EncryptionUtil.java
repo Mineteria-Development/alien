@@ -133,7 +133,7 @@ public class EncryptionUtil {
         JsonObject payload = new JsonObject();
         payload.add("chain", fakeChain);
 
-        return new McpeLogin(354, payload.toString(), clientData.serialize());
+        return new McpeLogin(player.getConnection().getProtocolVersion(), payload.toString(), clientData.serialize());
     }
 
     public static byte[] generateRandomToken() {
