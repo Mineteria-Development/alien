@@ -25,7 +25,7 @@ public class McpeLogin implements McpePacket {
     }
 
     @Override
-    public void decode(ByteBuf buffer) {
+    public void decode(ByteBuf buffer, int protocolVersion) {
         this.protocolVersion = buffer.readInt();
         Varints.decodeUnsigned(buffer); // length of the next two strings, with length included
         this.chainData = McpeUtil.readLELengthString(buffer);
@@ -33,8 +33,8 @@ public class McpeLogin implements McpePacket {
     }
 
     @Override
-    public void encode(ByteBuf buffer) {
-        buffer.writeInt(protocolVersion);
+    public void encode(ByteBuf buffer, int protocolVersion) {
+        buffer.writeInt(this.protocolVersion);
         Varints.encodeUnsigned(buffer, this.chainData.length() + this.clientData.length() + 8); // length of the next string, with length included
         McpeUtil.writeLELengthString(buffer, this.chainData);
         McpeUtil.writeLELengthString(buffer, this.clientData);

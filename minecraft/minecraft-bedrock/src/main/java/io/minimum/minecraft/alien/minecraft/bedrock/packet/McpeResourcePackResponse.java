@@ -18,13 +18,13 @@ public class McpeResourcePackResponse implements McpePacket {
     }
 
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
         this.status = buf.readUnsignedByte();
         buf.skipBytes(buf.readableBytes());
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
         buf.writeByte(status);
         buf.writeShortLE(0);
     }

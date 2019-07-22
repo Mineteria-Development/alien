@@ -4,12 +4,12 @@ import io.netty.buffer.ByteBuf;
 
 public class McpeClientToServerEncryptionHandshake implements McpePacket {
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
 
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
 
     }
 

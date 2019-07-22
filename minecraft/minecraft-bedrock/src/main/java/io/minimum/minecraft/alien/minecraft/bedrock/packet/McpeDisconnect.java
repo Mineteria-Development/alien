@@ -16,7 +16,7 @@ public class McpeDisconnect implements McpePacket {
     }
 
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
         this.hideDisconnectScreen = buf.readBoolean();
         if (!this.hideDisconnectScreen) {
             this.message = McpeUtil.readVarintLengthString(buf);
@@ -24,7 +24,7 @@ public class McpeDisconnect implements McpePacket {
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
         buf.writeBoolean(hideDisconnectScreen);
         if (!this.hideDisconnectScreen) {
             McpeUtil.writeVarintLengthString(buf, message);

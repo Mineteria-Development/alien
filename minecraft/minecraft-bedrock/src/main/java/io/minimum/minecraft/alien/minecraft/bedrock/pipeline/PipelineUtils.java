@@ -11,7 +11,7 @@ public class PipelineUtils {
 
     public static BedrockConnection initializeClientPipeline(Channel ch, BedrockConnection establishingClient) {
         // Decode/encode MCPE packets
-        ch.pipeline().addLast("alien-mcpe-codec", new McpePacketCodec(ProtocolVersions.PE_1_11));
+        ch.pipeline().addLast("alien-mcpe-codec", new McpePacketCodec(ProtocolVersions.getRegistry(ProtocolVersions.PE_1_11)));
 
         // Handle MCPE packets
         BedrockConnection mc = new BedrockConnection(ch);

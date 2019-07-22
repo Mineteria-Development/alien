@@ -14,12 +14,12 @@ public class McpeServerToClientEncryptionHandshake implements McpePacket {
     }
 
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
         this.jwt = McpeUtil.readVarintLengthString(buf);
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
         McpeUtil.writeVarintLengthString(buf, this.jwt);
     }
 

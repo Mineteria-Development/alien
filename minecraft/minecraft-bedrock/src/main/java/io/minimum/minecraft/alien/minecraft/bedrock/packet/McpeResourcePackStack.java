@@ -5,12 +5,12 @@ import io.netty.buffer.ByteBuf;
 
 public class McpeResourcePackStack implements McpePacket {
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
         buf.skipBytes(buf.readableBytes());
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
         buf.writeBoolean(false);
         Varints.encodeUnsigned(buf, 0);
         Varints.encodeUnsigned(buf, 0);

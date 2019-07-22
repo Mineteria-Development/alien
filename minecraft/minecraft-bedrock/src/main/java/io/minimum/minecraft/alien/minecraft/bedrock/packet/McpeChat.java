@@ -27,7 +27,7 @@ public class McpeChat implements McpePacket {
     private List<String> parameters = ImmutableList.of();
 
     @Override
-    public void decode(ByteBuf buf) {
+    public void decode(ByteBuf buf, int protocolVersion) {
         this.type = buf.readByte();
         this.needsTranslation = buf.readBoolean();
         switch (type){
@@ -58,7 +58,7 @@ public class McpeChat implements McpePacket {
     }
 
     @Override
-    public void encode(ByteBuf buf) {
+    public void encode(ByteBuf buf, int protocolVersion) {
         buf.writeByte(type);
         buf.writeBoolean(needsTranslation);
         switch (type) {

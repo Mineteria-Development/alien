@@ -28,7 +28,7 @@ public class BedrockProxyNetworkListener implements NetworkListener {
 
     @Override
     public boolean bind(TransportType type, EventLoopGroup boss, EventLoopGroup worker) {
-        final McpePacketRegistry registry = ProtocolVersions.PE_1_11; // TODO: Let's do better than this
+        final McpePacketRegistry registry = ProtocolVersions.getRegistry(ProtocolVersions.PE_1_11); // TODO: Let's do better than this
 
         this.channel = new ServerBootstrap()
                 .group(boss, worker) // NB: this is fairly useless if we do SO_REUSEPORT

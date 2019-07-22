@@ -1,6 +1,7 @@
 package io.minimum.minecraft.alien.minecraft.bedrock.pipeline.codec;
 
 import io.minimum.minecraft.alien.minecraft.bedrock.packet.McpePacket;
+import io.minimum.minecraft.alien.minecraft.bedrock.packet.ProtocolVersions;
 import io.minimum.minecraft.alien.minecraft.shared.codec.Varints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +27,7 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
         ByteBuf buf = ctx.alloc().directBuffer();
         try {
             Varints.encodeUnsigned(buf, id);
-            msg.encode(buf);
+            msg.encode(buf, ProtocolVersions.PE_1_11);
             out.add(buf);
         } catch (Exception e) {
             buf.release();
@@ -44,7 +45,7 @@ public class McpePacketCodec extends MessageToMessageCodec<ByteBuf, McpePacket> 
             msg.readerIndex(ri);
             out.add(msg.retain());
         } else {
-            packet.decode(msg);
+            packet.decode(msg, ProtocolVersions.PE_1_11);
             if (msg.isReadable()) {
                 throw new CorruptedFrameException("Did not read all bytes for message " + packet.getClass().getName());
             }
